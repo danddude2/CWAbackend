@@ -1,0 +1,10 @@
+FILES INCLUDED (TO RUN type "python _fileName_" then type mysql db password)
+-----------------------------------------------------------------------------
+*show_tablesDB.py -will show all tables in the database
+
+#In show_tables comment out "password = getpass.getpass()" with '#'
+#And replace with your db password (set on insall)
+
+
+
+
