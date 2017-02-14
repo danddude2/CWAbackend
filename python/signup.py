@@ -2,61 +2,44 @@
 import cgitb; cgitb.enable()
 import MySQLdb
 import cgi
-import bcrypt
-#Database insertion for signing up
+#import bcrypt
+
+form = cgi.FieldStorage()
 
 try: import simplejson as json
 except ImportError: import json
 
-print "Content-type: application/json\n"
-print ""
-form = cgi.FieldStorage()
-
-db = "cwatest2"
-data = { 'firstName':form['firstName'].value, 'lastName':form['lastName'].value, 'email':form['email'].value,'phone':form['phone'].value, 'password':form['password'].value}
-
-hashed = bcrypt.hashpw(str(attempted_password),bcrypt.gensalt())
-
-conn = MySQLdb.connect(user = "root",passwd = "2511",db) # change the name of this
-c = conn.cursor()
+data = { 'firstName':form.getvalue("firstName"), 'lastName':form.getvalue("lastName"), 'email':form.getvalue("email"),'phone':form.getvalue("phone"), 'password':form.getvalue("phone")}
 
 try:
-	
-
-try:
-	# create on general instance of the job 
-	check_person = ("SELECT username FROM VMS_persons WHERE username=%s UNION SELECT email FROM VMS_persons WHERE email=%s")
-	
-	check_vaules = (
-	
+    conn = MySQLdb.connect("localhost", "cwajazz9_vms", "radio#492*", "cwajazz9_vms")
+    c = conn.cursor()
+    
+except Exception as e:
+    print("Status: 500 Server Error\n")
+    exit(1)
+    
+if data["firstName"] and data["lastName"] and data["email"] and data["phone"] and data["password"]:
+  
+    add_person = ("INSERT INTO VMS_persons(first_name,last_name,email,phone,password) VALUES(%s,%s,%s,%s,%s)")
+    check_person =  ("SELECT email FROM VMS_persons WHERE email=%s")
+    
+    add_person_values = (data['firstName'],data['lastName'],data['email'],data['phone'],data['password'])
+    check_person_values = (data['email'])
+    
+    try:
+		c.execute(check_person,check_person_values)
 		
-	add_person = ("INSERT INTO VMS_events "
-				 "(event_name,event_description) "
-				 "VALUES (%s,%s)")
-	add_values = (event_name,event_description)	
-	
-	c.execute(add_person, values)
-	conn.commit()
-	
-	c.close()
-	conn.close()
-	        
-except MySQLdb.Error as err:
-        print(err)
-
-	c.execute("SELECT username FROM VMS_persons WHERE username=%s UNION SELECT email FROM VMS_persons WHERE email=%s",[attempted_username,attempted_email])
-	if c.rowcount == 0:
-		c.execute("INSERT INTO VMS_persons(username,password,email,first_name,last_name) VALUES(%s,%s,%s,%s,%s)",[attempted_username,hashed,attempted_email,attempted_firstname,attempted_lastname])
-		conn.commit()
-		return redirect(url_for('dashboardpage'))
-	else:
-		response = 'username or email is already taken'
-		conn.rollback()
-		return render_template("signup.html",error=response)
-except:
-	response ="execute failed"
-	conn.rollback()
-	
-return render_template("signup.html",error=response)
-
-print(json.JSONEncoder().encode(data))
+		if c.rowcount != 0:
+			print("Status: 202 Invalid email\n")			
+			
+		else:
+			c.execute(add_person,add_person_values)
+			conn.commit()			
+			print("Status: 200 OK\n")
+        
+    except Exception as e:
+        print("Status: 430 Invalid Request\n")
+        
+else:
+    print("Status: 460 Invalid Request\n")
