@@ -1,0 +1,177 @@
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
+
+CREATE SCHEMA IF NOT EXISTS `cwajazz9_vms` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
+USE `cwajazz9_vms` ;
+
+-- -----------------------------------------------------
+-- Table `cwajazz9_vms`.`VMS_events`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cwajazz9_vms`.`VMS_events` (
+  `event_id` INT NOT NULL AUTO_INCREMENT,
+  `event_name` VARCHAR(45) NOT NULL,
+  `event_description` VARCHAR(45) NULL,
+  `start_date` DATE NULL,
+  `end_date` DATE NULL,
+  PRIMARY KEY (`event_id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cwajazz9_vms`.`VMS_jobs`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cwajazz9_vms`.`VMS_jobs` (
+  `job_id` INT NOT NULL AUTO_INCREMENT,
+  `event_id` INT NOT NULL,
+  `job_skill` INT NULL,
+  `job_time_start` DATETIME NOT NULL,
+  `job_time_end` DATETIME NOT NULL,
+  `location` VARCHAR(45) NOT NULL,
+  `job_description` VARCHAR(200) NOT NULL,
+  `volunteer_needed` INT NOT NULL,
+  `volunteers_assigned` INT NOT NULL,
+  PRIMARY KEY (`job_id`, `event_id`),
+  INDEX `index2` (`event_id` ASC),
+  CONSTRAINT `fk_VMS_jobs_1`
+    FOREIGN KEY (`event_id`)
+    REFERENCES `cwajazz9_vms`.`VMS_events` (`event_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cwajazz9_vms`.`person`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cwajazz9_vms`.`person` (
+  `person_pk` INT NOT NULL AUTO_INCREMENT,
+  `email` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`person_pk`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cwajazz9_vms`.`VMS_persons`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cwajazz9_vms`.`VMS_persons` (
+  `person_pk` INT NOT NULL,
+  `phone_type` VARCHAR(45) NOT NULL,
+  `password` VARCHAR(45) NOT NULL,
+  `communication_preference` VARCHAR(45) NOT NULL,
+  `admin_status` TINYINT(1) NOT NULL,
+  `salt` CHAR(36) NOT NULL,
+  PRIMARY KEY (`person_pk`),
+  CONSTRAINT `fk_VMS_persons_1`
+    FOREIGN KEY (`person_pk`)
+    REFERENCES `cwajazz9_vms`.`person` (`person_pk`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cwajazz9_vms`.`VMS_job_assignments`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cwajazz9_vms`.`VMS_job_assignments` (
+  `person_pk` INT NOT NULL,
+  `job_id` INT NOT NULL,
+  PRIMARY KEY (`job_id`, `person_pk`),
+  INDEX `index2` (`person_pk` ASC),
+  INDEX `index3` (`job_id` ASC),
+  CONSTRAINT `fk_VMS_job_assignments_1`
+    FOREIGN KEY (`job_id`)
+    REFERENCES `cwajazz9_vms`.`VMS_jobs` (`job_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_VMS_job_assignments_2`
+    FOREIGN KEY (`person_pk`)
+    REFERENCES `cwajazz9_vms`.`VMS_persons` (`person_pk`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cwajazz9_vms`.`VMS_skills`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cwajazz9_vms`.`VMS_skills` (
+  `skill_id` INT NOT NULL AUTO_INCREMENT,
+  `skill_name` VARCHAR(45) NOT NULL,
+  `skill_description` VARCHAR(45) NULL,
+  PRIMARY KEY (`skill_id`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cwajazz9_vms`.`VMS_volunteer_skills`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cwajazz9_vms`.`VMS_volunteer_skills` (
+  `person_pk` INT NOT NULL,
+  `skill_id` INT NOT NULL,
+  PRIMARY KEY (`person_pk`, `skill_id`),
+  INDEX `index2` (`person_pk` ASC),
+  INDEX `fk_VMS_volunteer_skills_2_idx` (`skill_id` ASC),
+  CONSTRAINT `fk_VMS_volunteer_skills_1`
+    FOREIGN KEY (`person_pk`)
+    REFERENCES `cwajazz9_vms`.`VMS_persons` (`person_pk`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_VMS_volunteer_skills_2`
+    FOREIGN KEY (`skill_id`)
+    REFERENCES `cwajazz9_vms`.`VMS_skills` (`skill_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cwajazz9_vms`.`VMS_job_skills`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cwajazz9_vms`.`VMS_job_skills` (
+  `job_id` INT NOT NULL,
+  `skill_id` INT NOT NULL,
+  PRIMARY KEY (`job_id`, `skill_id`),
+  INDEX `index2` (`job_id` ASC),
+  INDEX `index3` (`skill_id` ASC),
+  CONSTRAINT `fk_VMS_job_skills_1`
+    FOREIGN KEY (`job_id`)
+    REFERENCES `cwajazz9_vms`.`VMS_jobs` (`job_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_VMS_job_skills_2`
+    FOREIGN KEY (`skill_id`)
+    REFERENCES `cwajazz9_vms`.`VMS_skills` (`skill_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `cwajazz9_vms`.`VMS_voluteer_availability`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cwajazz9_vms`.`VMS_voluteer_availability` (
+  `availability_id` INT NOT NULL AUTO_INCREMENT,
+  `person_pk` INT NOT NULL,
+  `free_time_start` DATETIME NOT NULL,
+  `free_time_end` DATETIME NOT NULL,
+  `event_id` INT NOT NULL,
+  PRIMARY KEY (`availability_id`, `person_pk`, `event_id`),
+  INDEX `index2` (`person_pk` ASC),
+  INDEX `index3` (`event_id` ASC),
+  CONSTRAINT `fk_VMS_voluteer_availability_1`
+    FOREIGN KEY (`person_pk`)
+    REFERENCES `cwajazz9_vms`.`VMS_persons` (`person_pk`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_VMS_voluteer_availability_2`
+    FOREIGN KEY (`event_id`)
+    REFERENCES `cwajazz9_vms`.`VMS_events` (`event_id`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
