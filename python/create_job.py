@@ -6,25 +6,26 @@ import MySQLdb
 import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
-data = { 'event_id':form.getvalue("eventId"), 'job_name':form.getvalue("jobName"), "job_time_start":form.getvalue("startTime"), 'job_time_end':form.getvalue("endTime"), 'location':form.getvalue("location"), 'job_description':form.getvalue("jobDesciption"), 'volunteer_needed':form.getvalue(volunteerNeeded)}
-#data = {'event_id':'1','job_name':'drive_people_back','job_time_start':'2017-01-01 00:00:00','job_time_end':'2017-01-02 00:00:00','location':'C4C','job_description':'hahaha this is description','volunteer_needed':'5'}
+data = { 'event_id':form.getvalue("eventId"), 'job_name':form.getvalue("jobName"), "job_time_start":form.getvalue("startTime"), 'job_time_end':form.getvalue("endTime"), 'location':form.getvalue("location"), 'job_description':form.getvalue("jobDesciption"), 'volunteer_needed':form.getvalue("volunteerNeeded")}
+#data = {'event_id':'1','job_name':'drive_people_back','job_time_start':'2017-01-01 00:00:00','job_time_end':'2017-01-02 00:00:00','location':'C4C','job_description':'hahaha this is description','volunteer_needed':'5'}1
 # Connect to database
 try:
     cursor, connection = connectDb()
 except Exception as e:
-    print("Status: 500 Database Connection Error\n")
+    print("Status: 400 Database Connection Error\n")
     print e
     exit(1)
 
 # Check if the input jason value is valid
-#if not(data["event_id"] and data["job_name"] and data['job_time_start'] and data['job_time_end'] and data['location'] and data['job_description'] and data['volunteer_needed']):
-#	print("Status: Some JSON value is empty\n")
-#	exit(1)
+if not(data["event_id"] and data["job_name"] and data['job_time_start'] and data['job_time_end'] and data['location'] and data['job_description'] and data['volunteer_needed']):
+    print("Status: 400 Some JSON value is empty\n")
+    print("Feilds are not all filled")
+    exit(1)
 if re.match('^\d\d\d\d\-\d\d\-\d\d\s\d\d\:\d\d\:\d\d$',data["job_time_start"]) == None:
-    print("Status: Invalid datetime format\n")
+    print("Status: 400 \Invalid datetime format\n")
     exit(1)
 if re.match('^\d\d\d\d\-\d\d\-\d\d\s\d\d\:\d\d\:\d\d$',data["job_time_end"]) == None:
-    print("Status: Invalid datetime format\n")
+    print("Status: 400 Invalid datetime format\n")
     exit(1)
 
 # Check if the event_id is valid
@@ -34,7 +35,7 @@ try:
         print("Status: 400 Event_id does not exist in table VMS_events\n")
         exit(1)
 except Exception as e:
-    print("Status: Invalid MySQL Request(check if event_id exist in VMS_events)\n")
+    print("Status: 400 Invalid MySQL Request(check if event_id exist in VMS_events)\n")
     print e
     exit(1)
 
@@ -46,6 +47,6 @@ try:
     print"Status: 200 Login OK\n"
 except Exception as e:
     connection.rollback()
-    print("Status: Invalid MySQL Request(insert value into VMS_voluteer_availability)\n")
+    print("Status: 400 Invalid MySQL Request(insert value into VMS_voluteer_availability)\n")
     print e
     exit(1)

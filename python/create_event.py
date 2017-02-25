@@ -6,11 +6,12 @@ import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
 data = { 'eventname':form.getvalue("eventName"), 'startdate':form.getvalue("startDate"), 'enddate':form.getvalue("endDate")}
+#data = { 'eventname':"the best event", 'startdate':'2012-01-01', 'enddate':'2012-01-02'}
 
 try:
 	cursor, connection = connectDb()
 except Exception as e:
-	print("Status: 500 Database Connection Error\n")
+	print("Status: 400 Database Connection Error\n")
 	print e
 	exit(1)
 
