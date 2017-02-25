@@ -56,7 +56,7 @@ for i in range(len(return_data)):
     event.update({'volunteer_needed':int(return_data[i][7])})
     event.update({'job_name':return_data[i][8]})
     event.update({'volunteer_assigned':int(return_data[i][9])})
-    out_data.update({'job_id: '+str(return_data[i][0]):event})
+    out_data.update({str(return_data[i][0]):event})
 print("Content-type: application/json")
 print("Status: 200 OK\n")
 print sendJson(out_data)
