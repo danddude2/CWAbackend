@@ -10,7 +10,7 @@ except ImportError: import json
 
 #form = cgi.FieldStorage()
 # Fake data:
-data = {'event_name':'cwa','job_name':'drive_people_back','job_time_start':'2017-01-01 00:00:00','job_time_end':'2017-01-02 00:00:00','location':'C4C','job_description':'hahaha this is description','volunteer_needed':'5'}
+data = {'event_id':'1','job_name':'drive_people_back','job_time_start':'2017-01-01 00:00:00','job_time_end':'2017-01-02 00:00:00','location':'C4C','job_description':'hahaha this is description','volunteer_needed':'5'}
 
 
 
@@ -26,7 +26,7 @@ except Exception as e:
 
 
 # Check if the input jason value is valid
-if not(data["event_name"] and data["job_name"] and data['job_time_start'] and data['job_time_end'] and data['location'] and data['job_description'] and data['volunteer_needed']):
+if not(data["event_id"] and data["job_name"] and data['job_time_start'] and data['job_time_end'] and data['location'] and data['job_description'] and data['volunteer_needed']):
 	print("Status: Some JSON value is empty\n")
 	exit(1)
 if re.match('^\d\d\d\d\-\d\d\-\d\d\s\d\d\:\d\d\:\d\d$',data["job_time_start"]) == None:
@@ -38,19 +38,19 @@ if re.match('^\d\d\d\d\-\d\d\-\d\d\s\d\d\:\d\d\:\d\d$',data["job_time_end"]) == 
 
 
 
-# Check the event_id corresponding to the event_name from table vms_events
+# Check if the event_id is valid
 try:
-	c.execute("select event_id from vms_events where event_name = %s",[data['event_name']])
-	return_id = str(c.fetchall()[0][0])
+	c.execute("select * from vms_events where event_id = %s",[data['event_id']])
+	if c.rowcount < 1:
+		print("Status: Event_id does not exist in table vms_event")
 except Exception as e:
-	print("Status: Event_name does not exit in table vms_events")
+	print("Status: Invalid MySQL Request(check if event_id exist in vms_event)")
 	exit(1)
-
 
 
 # Insert the skill_name and skill_description into vms_skill
 try:
-	c.execute("insert into vms_jobs(event_id,job_name,job_time_start,job_time_end,location,job_description,volunteer_needed,volunteers_assigned)values(%s,%s,%s,%s,%s,%s,%s,%s);",[return_id,data['job_name'],data['job_time_start'],data['job_time_end'],data['location'],data['job_description'],data['volunteer_needed'],'0'])
+	c.execute("insert into vms_jobs(event_id,job_name,job_time_start,job_time_end,location,job_description,volunteer_needed,volunteers_assigned)values(%s,%s,%s,%s,%s,%s,%s,%s);",[data['event_id'],data['job_name'],data['job_time_start'],data['job_time_end'],data['location'],data['job_description'],data['volunteer_needed'],'0'])
 	conn.commit()
 except Exception as e:
 	print("Status: Invalid MySQL Request(insert value into vms_voluteer_availability)\n")
