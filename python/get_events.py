@@ -2,42 +2,42 @@
 import cgitb; cgitb.enable()
 import MySQLdb
 import cgi
+from helper import connectDb, sendJson, encrypt
+import cgitb; cgitb.enable()
+
 try: import simplejson as json
 except ImportError: import json
 
-
 # Connect to database
 try:
-    conn = MySQLdb.connect(user='root', passwd = '2511', db = 'cwajazz9_vms')
-    c = conn.cursor()
+	cursor, connection = connectDb()
 except Exception as e:
-    print("Status: Database connection initiation error")
-    exit(1)
-
-
+	print("Status: 400 Database Connection Error\n")
+	print e
+	exit(1)
 
 # Get information from database
 try:
-	c.execute("select * from vms_events")
-	return_data = c.fetchall()
+	cursor.execute("SELECT * from VMS_events")
+	return_data = cursor.fetchall()
 except Exception as e:
-	print("Status: Invalid MySQL Request(pull data from vms_events with job_name")
+	print("Status: 200 Invalid SQL\n")
 	exit(1)
 
+try:
+	data = {}
+	# Insert data into josn format
+	for i in range(len(return_data)):
+		event = {}
+		event.update({'event_name':return_data[i][1]})
+		event.update({'start_date':str(return_data[i][3])})
+		event.update({'end_date':str(return_data[i][4])})
+		data.update({'event_id: '+str(return_data[i][0]):event})
 
-
-# Insert data into josn format
-out_data = {}
-for i in range(len(return_data)):
-	event = {}
-	event.update({'event_name':return_data[i][1]})
-	event.update({'event_description':return_data[i][2]})
-	out_data.update({'event_id: '+str(return_data[i][0]):event})
-
-
-
-
-print out_data
-
-
-
+	print "Content-type: application/json\n"
+	print ""
+	print sendJson(data)
+except Exception as e:
+		print("Status: 400 Cannot Get Events\n")
+		print e
+		exit(1)

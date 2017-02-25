@@ -1,27 +1,49 @@
+#!/usr/bin/python2.7
+import cgi
+from helper import connectDb, sendJson
 import MySQLdb
-import getpass
+import cgitb; cgitb.enable()
 
-
-
-conn = MySQLdb.connect(user = "root",passwd = "2511",db = "cwatest2")
-c = conn.cursor()
-
-event_name = getpass.getpass("Input event name:")
-event_description = getpass.getpass("Input event description:")
-
+form = cgi.FieldStorage()
+data = { 'eventname':form.getvalue("eventName"), 'startdate':form.getvalue("startDate"), 'enddate':form.getvalue("endDate")}
 
 try:
-	# create on general instance of the job 
-	add_event = ("INSERT INTO VMS_events "
-				 "(event_name,event_description) "
-				 "VALUES (%s,%s)")
-	values = (event_name,event_description)	
-	
-	c.execute(add_event, values)
-	conn.commit()
-	
-	c.close()
-	conn.close()
-	        
-except MySQLdb.Error as err:
-        print(err)
+	cursor, connection = connectDb()
+except Exception as e:
+	print("Status: 500 Database Connection Error\n")
+	print e
+	exit(1)
+
+add_event = ("INSERT INTO VMS_events (event_name,start_date,end_date) VALUES (%s,%s,%s)") #start_date,end_date
+add_event_values = (data['eventname'],data['startdate'],data['enddate'])
+check_event = ("SELECT event_id FROM VMS_events WHERE event_name=%s")
+
+try:
+	cursor.execute(check_event,data['eventname'])
+	rowcount = cursor.rowcount
+	cursor.close()
+
+except Exception as e:
+	connection.rollback()
+	print("Status: 400 Invalid SQL Command\n")
+	print e
+	exit(1)
+
+try:
+	if rowcount == 0:
+		cursor = connection.cursor()
+		cursor.execute(add_event, add_event_values)
+		connection.commit()
+		cursor.close()
+		print("Status: 200 Event created\n")
+		success = {'success':True}
+		print sendJson(success)
+	else:
+		print("Status: 400 Event already in database\n")
+		exit(1)
+
+except Exception as e:
+	connection.rollback()
+	print("Status: 400 Invalid SQL Statment\n")
+	print e
+	exit(1)
