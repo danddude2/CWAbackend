@@ -32,7 +32,7 @@ try:
 		event.update({'event_name':return_data[i][1]})
 		event.update({'start_date':str(return_data[i][3])})
 		event.update({'end_date':str(return_data[i][4])})
-		data.update({'event_id: '+str(return_data[i][0]):event})
+		data.update({str(return_data[i][0]):event})
 
 	print "Content-type: application/json\n"
 	print ""
