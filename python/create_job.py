@@ -47,6 +47,6 @@ try:
     print"Status: 200 Login OK\n"
 except Exception as e:
     connection.rollback()
-    print("Status: 400 Invalid MySQL Request(insert value into VMS_voluteer_availability)\n")
+    print("Status: 400 Invalid MySQL Request(insert value into VMS_jobs)\n")
     print e
     exit(1)
