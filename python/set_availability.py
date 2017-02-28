@@ -7,7 +7,7 @@ import cgitb; cgitb.enable()
 
 
 # Helper function
-# Paser function: hour period to hour nodes 
+# Paser function: hour period to hour nodes
 # Input type: String
 # return type: Array
 def hour_period_to_node(time_period):
@@ -40,7 +40,8 @@ def giant_datetime_object_to_array(datetime_object):
 
 
 form = cgi.FieldStorage()
-data = {'eventId':'1','volunteerId':'1','time':{'2017-01-01':['06:00-08:00','09:00-11:00'],'2017-01-02':['13:00-14:00','15:00-17:00']}}
+#data = {'eventId':form.getvalue("eventId"),'volunteerId':form.getvalue("volunteerId"),'time':form.getvalue("time")}
+data = {'eventId':'1','volunteerId':'14809','time':{'2017-01-01':['06:00-08:00','09:00-11:00'],'2017-01-02':['13:00-14:00','15:00-17:00']}}
 
 
 # Connect to database
@@ -104,6 +105,3 @@ for datetime in giant_datetime_object_to_array(data['time']):
 
 print"Content-type: application/json"
 print"Status: 200 Login OK\n"
-
-
-
