@@ -23,7 +23,6 @@ def hour_period_to_node(time_period):
 			out.append('0'+str(i)+':00')
 		else:
 			out.append(str(i)+':00')
-
 	return out
 
 
