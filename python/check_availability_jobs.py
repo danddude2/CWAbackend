@@ -5,8 +5,8 @@ import MySQLdb
 import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
-#data = {'personId':form.getvalue("personId"), 'eventId':form.getvalue("eventId")}
-data = {'personId':14816,'eventId':1}
+data = {'personId':form.getvalue("personId"), 'eventId':form.getvalue("eventId")}
+#data = {'personId':14816,'eventId':1}
 # Connect to database
 try:
 	cursor, connection = connectDb()
@@ -17,7 +17,7 @@ except Exception as e:
 	exit(1)
 
 
-# Check if the input json value is valid
+# Check if the input jason value is valid
 if not(data["personId"] and data["eventId"]):
 	print("Status: 400 Some JSON value is empty\n")
 	print("Some JSON value is empty")
@@ -31,7 +31,7 @@ try:
 		print("persons_id does not exist in table VMS_persons")
 		exit(1)
 except Exception as e:
-	print("Status: 400 Invalid MySQL Request(check if person exist in VMS_persons)\n")
+	print("Status: 400 Invalid MySQL Request(check if persons exist in VMS_persons)\n")
 	print e
 	exit(1)
 
@@ -59,8 +59,8 @@ try:
 		return_data = list(set(return_data))
 except Exception as e:
 	connection.rollback()
-	print("Status: 400 Invalid MySQL Request(Select jobs from VMS_job_assignments)\n")
-	print("Invalid MySQL Request(Select jobs from VMS_job_assignments)")
+	print("Status: 400 Invalid MySQL Request(insert value into VMS_voluteer_availability)\n")
+	print("Invalid MySQL Request(insert value into VMS_voluteer_availability)")
 	print e
 	exit(1)
 

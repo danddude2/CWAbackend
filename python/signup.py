@@ -7,6 +7,7 @@ import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
 data = { 'firstName':form.getvalue("firstName"), 'lastName':form.getvalue("lastName"), 'email':form.getvalue("email"),'phone':form.getvalue("phone"), 'password':form.getvalue("password"), "phone_type":form.getvalue("phoneProvider")}
+#data = { 'firstName':"admin", 'lastName':"admin", 'email':"admin",'phone':"1234567891", 'password':"root", "phone_type":"Verison"}
 
 try:
 	cursor, connection = connectDb()
@@ -15,12 +16,17 @@ except Exception as e:
 	print e
 	exit(1)
 
-addPersonSQL = ("INSERT INTO person(name_first,name_last,email,phone_mobile) VALUES(%s,%s,%s,%s)")
-checkPersonSQL = ("SELECT email FROM person WHERE email=%s")
-addPasswordSQL = ("INSERT INTO VMS_persons(person_pk,password,salt,phone_type) VALUES(%s,%s,%s,%s)")
+try:
+	hashed, salt = encrypt(data['password'])
+except Exception as e:
+	print("Status: 400 Encryption error\n")
+	print e
+	exit(1)
 
-addPersonValues = (data['firstName'],data['lastName'],data['email'],data['phone'])
+addPersonSQL = ("INSERT INTO VMS_persons(first_name, last_name, email, password, phone, phone_type, salt) VALUES(%s,%s,%s,%s,%s,%s,%s)")
+checkPersonSQL = ("SELECT email FROM VMS_persons WHERE email=%s")
 checkPersonValues = (data['email'])
+addPersonValues = (data['firstName'],data['lastName'],data['email'], hashed, data['phone'], data['phone_type'], salt)
 
 try:
 	cursor.execute(checkPersonSQL,checkPersonValues)
@@ -32,14 +38,10 @@ try:
 		try:
 			cursor = connection.cursor()
 			cursor.execute(addPersonSQL,addPersonValues)
-
-			personPk = cursor.lastrowid
-			hashed, salt = encrypt(data['password'])
-			addPasswordValues = (personPk,hashed,salt,data['phone_type'])
-
-			cursor.execute(addPasswordSQL,addPasswordValues)
 			connection.commit()
+			print("Content-type: application/json")
 			print("Status: 200 OK\n")
+			print sendJson({'Sucess':True})
 		except Exception as e:
 			connection.rollback()
 			print("Status: 400 Error Signing up\n")

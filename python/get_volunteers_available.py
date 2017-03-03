@@ -5,8 +5,8 @@ import MySQLdb
 import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
-#data = {'jobId':form.getvalue("jobId")}
-data = {'jobId':1}
+data = {'jobId':form.getvalue("jobId")}
+#data = {'jobId':1}
 # Connect to database
 try:
 	cursor, connection = connectDb()

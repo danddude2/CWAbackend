@@ -6,11 +6,10 @@ import MySQLdb
 import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
-email = form.getvalue("email")
-attemptedPassword = form.getvalue("password")
-#email = "volunteer"
-#attemptedPassword = "root"
-data = {}
+
+data = {'email':form.getvalue("email"), 'attemptedPassword':form.getvalue("password")}
+#data = {'email':'admin','attemptedPassword':'root'}
+output = {}
 
 try:
 	cursor, connection = connectDb()
@@ -22,11 +21,11 @@ except Exception as e:
 getSaltSQL = "SELECT salt FROM VMS_persons WHERE person_pk =%s"
 getPasswordSQL ="SELECT password FROM VMS_persons WHERE person_pk=%s"
 getAdminSQL ="SELECT admin_status FROM VMS_persons WHERE person_pk=%s"
-getPkSQL = "SELECT person_pk FROM person WHERE email = %s"
-getEvents = "SELECT event_id FROM VMS_voluteer_availability WHERE person_pk = %s"
+getPkSQL = "SELECT person_pk FROM VMS_persons WHERE email = %s"
+getEvents = "SELECT event_id FROM VMS_volunteer_availability WHERE person_pk = %s"
 
 try:
-	cursor.execute(getPkSQL,[email])
+	cursor.execute(getPkSQL,data['email'])
 	(key,) = cursor.fetchone()
 	cursor.close()
 except Exception as e:
@@ -75,18 +74,18 @@ except Exception as e:
 	exit(1)
 
 try:
-	if p == hashlib.sha512(s + attemptedPassword).hexdigest():
+	if p == hashlib.sha512(s + data['attemptedPassword']).hexdigest():
 		cursor = connection.cursor()
 		cursor.execute(getAdminSQL,key)
 		(status,) = cursor.fetchone()
 		if(status == 0):
-			data.update({'isAdmin':False,'personID':key, 'eventIds':events})
+			output.update({'isAdmin':False,'personID':key, 'eventIds':events})
 		else:
-			data.update({'isAdmin':True,'personID':key, 'eventIds':events})
+			output.update({'isAdmin':True,'personID':key, 'eventIds':events})
 		print"Content-type: application/json"
 		print"Status: 200 Login OK"
 		print ""
-		print sendJson(data)
+		print sendJson(output)
 	else:
 		print("Status: 400 Invalid Password\n")
 except Exception as e:

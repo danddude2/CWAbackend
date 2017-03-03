@@ -6,8 +6,11 @@ import MySQLdb
 import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
-data = { 'event_id':form.getvalue("eventId"), 'job_name':form.getvalue("jobName"), "job_time_start":form.getvalue("startTime"), 'job_time_end':form.getvalue("endTime"), 'location':form.getvalue("location"), 'job_description':form.getvalue("jobDesciption"), 'volunteer_needed':form.getvalue("volunteerNeeded")}
-#data = {'event_id':'1','job_name':'drive_people_back','job_time_start':'2017-01-01 00:00:00','job_time_end':'2017-01-02 00:00:00','location':'C4C','job_description':'hahaha this is description','volunteer_needed':'5'}1
+#data = { 'event_id':form.getvalue("eventId"), 'job_name':form.getvalue("jobName"), "job_time_start":form.getvalue("startTime"), 'job_time_end':form.getvalue("endTime"), 'location':form.getvalue("location"), 'job_description':form.getvalue("jobDesciption")}
+#data = {'event_id':'1','job_name':'drive_people_back','job_time_start':'2017-01-01 00:00:00','job_time_end':'2017-01-02 00:00:00','location':'C4C','job_description':'hahaha this is description'}
+data = { 'event_id':form.getvalue("eventId"), 'job_name':form.getvalue("jobName"), "job_date":form.getvalue("jobDate"), "job_time_start":form.getvalue("startTime"), 'job_time_end':form.getvalue("endTime"), 'location':form.getvalue("location"), 'job_description':form.getvalue("jobDesciption")}
+data['job_time_start'] = str(data['job_date']) + ' ' + str(data['job_time_start'])
+data['job_time_end'] = str(data['job_date']) + ' ' + str(data['job_time_end'])
 # Connect to database
 try:
     cursor, connection = connectDb()
@@ -17,7 +20,7 @@ except Exception as e:
     exit(1)
 
 # Check if the input jason value is valid
-if not(data["event_id"] and data["job_name"] and data['job_time_start'] and data['job_time_end'] and data['location'] and data['job_description'] and data['volunteer_needed']):
+if not(data["event_id"] and data["job_name"] and data['job_time_start'] and data['job_time_end'] and data['location'] and data['job_description']):
     print("Status: 400 Some JSON value is empty\n")
     print("Feilds are not all filled")
     exit(1)
@@ -41,10 +44,11 @@ except Exception as e:
 
 # Insert the skill_name and skill_description into vms_skill
 try:
-    cursor.execute("INSERT INTO VMS_jobs(event_id,job_name,job_time_start,job_time_end,location,job_description,volunteer_needed,volunteers_assigned)values(%s,%s,%s,%s,%s,%s,%s,%s);",[data['event_id'],data['job_name'],data['job_time_start'],data['job_time_end'],data['location'],data['job_description'],data['volunteer_needed'],'0'])
+    cursor.execute("INSERT INTO VMS_jobs(event_id,job_name,job_time_start,job_time_end,location,job_description)values(%s,%s,%s,%s,%s,%s);",[data['event_id'],data['job_name'],data['job_time_start'],data['job_time_end'],data['location'],data['job_description']])
     connection.commit()
     print"Content-type: application/json"
     print"Status: 200 Login OK\n"
+    print sendJson({'Success':True})
 except Exception as e:
     connection.rollback()
     print("Status: 400 Invalid MySQL Request(insert value into VMS_jobs)\n")
