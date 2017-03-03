@@ -22,7 +22,7 @@ ENGINE = InnoDB;
 -- Table `cwajazz9_vms`.`VMS_persons`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `cwajazz9_vms`.`VMS_persons` (
-  `person_pk` INT NOT NULL,
+  `person_pk` INT NOT NULL AUTO_INCREMENT,
   `first_name` VARCHAR(45) NOT NULL,
   `last_name` VARCHAR(45) NOT NULL,
   `email` VARCHAR(45) NOT NULL,
@@ -43,11 +43,11 @@ CREATE TABLE IF NOT EXISTS `cwajazz9_vms`.`VMS_jobs` (
   `job_id` INT NOT NULL AUTO_INCREMENT,
   `event_id` INT NOT NULL,
   `person_pk` INT NULL,
-  `job_skill` INT NULL,
   `job_time_start` DATETIME NOT NULL,
   `job_time_end` DATETIME NOT NULL,
   `location` VARCHAR(45) NOT NULL,
   `job_description` VARCHAR(200) NOT NULL,
+  `job_name` VARCHAR(200) NOT NULL,
   PRIMARY KEY (`job_id`, `event_id`),
   INDEX `index2` (`event_id` ASC),
   INDEX `index3` (`person_pk` ASC),
@@ -125,9 +125,9 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `cwajazz9_vms`.`VMS_volunteer_availability` (
   `person_pk` INT NOT NULL,
   `event_id` INT NOT NULL,
-  `job_id` INT NOT NULL,
+  `job_id` INT NULL,
   `free_time_start` DATETIME NOT NULL,
-  PRIMARY KEY (`person_pk`, `event_id`, `job_id`),
+  PRIMARY KEY (`person_pk`, `event_id`),
   INDEX `index2` (`person_pk` ASC),
   INDEX `index3` (`event_id` ASC),
   INDEX `index4` (`job_id` ASC),
