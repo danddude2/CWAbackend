@@ -14,15 +14,27 @@ def hour_period_to_node(time_period):
 	out = []
 	start = int(time_period[0:2])
 	end = int(time_period[6:8])
-	if (start >= end):
-		print("Status: 400 Wrong hour format(Example : 09:00-08:00 or 09:00-09:00)\n")
-		print("Wrong hour format(Example : 09:00-08:00 or 09:00-09:00)")
-		exit(1)
-	for i in range(start,end):
-		if (i<10):
-			out.append('0'+str(i)+':00')
+	if(start == end):
+		if (end<10):
+			out.append('0'+str(end)+':00')
 		else:
-			out.append(str(i)+':00')
+			out.append(str(end)+':00')
+	else:
+		for i in range(start,end):
+			if (i<10):
+				out.append('0'+str(i)+':00')
+				out.append('0'+str(i)+':30')
+			else:
+				out.append(str(i)+':00')
+				out.append(str(i)+':30')
+
+		if (int(time_period[3]) == 3):
+			out = out[1:len(out)]
+		if (int(time_period[9]) == 3):
+			if (end<10):
+				out.append('0'+str(end)+':00')
+			else:
+				out.append(str(end)+':00')
 	return out
 
 
@@ -41,7 +53,7 @@ def giant_datetime_object_to_array(datetime_object):
 
 form = cgi.FieldStorage()
 data = {'eventId':form.getvalue("eventId"),'volunteerId':form.getvalue("volunteerId"),'time':form.getvalue("time")}
-#data = {'eventId':'1','volunteerId':'14810','time':{'2017-01-01':['06:00-08:00','09:00-11:00'],'2017-01-02':['13:00-14:00','15:00-17:00']}}
+#data = {'eventId':'1','volunteerId':'3','time':{'2017-01-01':['06:00-08:00'],'2017-01-02':['13:00-14:00','15:00-17:30']}}
 
 
 # Connect to database
@@ -87,21 +99,37 @@ except Exception as e:
 	exit(1)
 
 
-# Parse data and insert them into vms_voluteer_availability table
+# Parse data and insert them into vms_volunteer_availability table
 for datetime in giant_datetime_object_to_array(data['time']):
-
-	add_event = ("INSERT INTO VMS_voluteer_availability(event_id,person_pk,free_time_start,free_time_end)values(%s,%s,%s,%s)")
-	add_event_values = ([data['eventId'],data['volunteerId'],datetime,'+1 hour'])
-
 	try:
-		cursor.execute(add_event,add_event_values)
-		connection.commit()
+		cursor.execute("SELECT * FROM VMS_volunteer_availability WHERE event_id = %s and person_pk = %s and free_time_start = %s",[data['eventId'],data['volunteerId'],datetime])
+		if cursor.rowcount == 0:
+			add_event = ("INSERT INTO VMS_volunteer_availability(event_id,person_pk,free_time_start)values(%s,%s,%s)")
+			add_event_values = ([data['eventId'],data['volunteerId'],datetime])
+
+			try:
+				cursor.execute(add_event,add_event_values)
+				connection.commit()
+			except Exception as e:
+				connection.rollback()
+				print("Status: 400 Invalid MySQL Request(insert value into VMS_volunteer_availability)\n")
+				print("Invalid MySQL Request(insert value into VMS_volunteer_availability)")
+				print e
+				exit(1)
 	except Exception as e:
-		connection.rollback()
-		print("Status: 400 Invalid MySQL Request(insert value into VMS_voluteer_availability)\n")
-		print("Invalid MySQL Request(insert value into VMS_voluteer_availability)")
+		print("Status: 400 Invalid MySQL Request(check if data already exists)\n")
 		print e
 		exit(1)
 
+
 print"Content-type: application/json"
 print"Status: 200 Login OK\n"
+
+
+
+
+
+
+
+
+
