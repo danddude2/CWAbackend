@@ -6,9 +6,9 @@ import MySQLdb
 import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
-#data = { 'event_id':form.getvalue("eventId"), 'job_name':form.getvalue("jobName"), "job_time_start":form.getvalue("startTime"), 'job_time_end':form.getvalue("endTime"), 'location':form.getvalue("location"), 'job_description':form.getvalue("jobDesciption")}
-#data = {'event_id':'1','job_name':'drive_people_back','job_time_start':'2017-01-01 00:00:00','job_time_end':'2017-01-02 00:00:00','location':'C4C','job_description':'hahaha this is description'}
 data = { 'event_id':form.getvalue("eventId"), 'job_name':form.getvalue("jobName"), "job_date":form.getvalue("jobDate"), "job_time_start":form.getvalue("startTime"), 'job_time_end':form.getvalue("endTime"), 'location':form.getvalue("location"), 'job_description':form.getvalue("jobDesciption")}
+#data = {'event_id':'7','job_name':'Make balloons','job_time_start':'2017-05-28 07:00:00','job_time_end':'2017-05-28 08:00:00','location':'C4C','job_description':'Make animals out of rubber'}
+
 data['job_time_start'] = str(data['job_date']) + ' ' + str(data['job_time_start'])
 data['job_time_end'] = str(data['job_date']) + ' ' + str(data['job_time_end'])
 # Connect to database
@@ -31,9 +31,12 @@ if re.match('^\d\d\d\d\-\d\d\-\d\d\s\d\d\:\d\d\:\d\d$',data["job_time_end"]) == 
     print("Status: 400 Invalid datetime format\n")
     exit(1)
 
+checkEventId = "SELECT * FROM VMS_events WHERE event_id = %s"
+insertJob = "INSERT INTO VMS_jobs(event_id,job_name,job_time_start,job_time_end,location,job_description)values(%s,%s,%s,%s,%s,%s);"
+
 # Check if the event_id is valid
 try:
-    cursor.execute("SELECT * FROM VMS_events WHERE event_id = %s",[data['event_id']])
+    cursor.execute(checkEventId,[data['event_id']])
     if cursor.rowcount < 1:
         print("Status: 400 Event_id does not exist in table VMS_events\n")
         exit(1)
@@ -44,7 +47,7 @@ except Exception as e:
 
 # Insert the skill_name and skill_description into vms_skill
 try:
-    cursor.execute("INSERT INTO VMS_jobs(event_id,job_name,job_time_start,job_time_end,location,job_description)values(%s,%s,%s,%s,%s,%s);",[data['event_id'],data['job_name'],data['job_time_start'],data['job_time_end'],data['location'],data['job_description']])
+    cursor.execute(insertJob,[data['event_id'],data['job_name'],data['job_time_start'],data['job_time_end'],data['location'],data['job_description']])
     connection.commit()
     print"Content-type: application/json"
     print"Status: 200 Login OK\n"
