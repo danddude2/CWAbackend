@@ -7,7 +7,7 @@ import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
 data = { 'firstName':form.getvalue("firstName"), 'lastName':form.getvalue("lastName"), 'email':form.getvalue("email"),'phone':form.getvalue("phone"), 'password':form.getvalue("password"), "phone_type":form.getvalue("phoneProvider")}
-#data = { 'firstName':"admin", 'lastName':"admin", 'email':"admin",'phone':"1234567891", 'password':"root", "phone_type":"Verison"}
+#data = { 'firstName':"party", 'lastName':"now", 'email':"wow@email.com",'phone':"1234567891", 'password':"password", "phone_type":"Verison"}
 
 try:
 	cursor, connection = connectDb()

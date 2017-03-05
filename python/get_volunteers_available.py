@@ -6,7 +6,7 @@ import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
 data = {'jobId':form.getvalue("jobId")}
-#data = {'jobId':1}
+#data = {'jobId':12}
 # Connect to database
 try:
 	cursor, connection = connectDb()
@@ -23,9 +23,13 @@ if not(data["jobId"]):
 	print("Some JSON value is empty")
 	exit(1)
 
+checkJobSQL ="SELECT * FROM VMS_jobs WHERE job_id = %s"
+getJobTimeStart ="SELECT job_time_start FROM VMS_jobs WHERE job_id = %s"
+getJobTimeEnd ="SELECT job_time_end FROM VMS_jobs WHERE job_id = %s"
+getAvailablePerson = "SELECT person_pk FROM VMS_volunteer_availability WHERE free_time_start BETWEEN %s AND %s"
 # Check if the jobId_id is valid
 try:
-	cursor.execute("SELECT * FROM VMS_jobs WHERE job_id = %s",[data['jobId']])
+	cursor.execute(checkJobSQL,[data['jobId']])
 	if cursor.rowcount < 1:
 		print("Status: 400 Event_id does not exist in table VMS_events\n")
 		print("Event_id does not exist in table VMS_events")
@@ -38,7 +42,7 @@ except Exception as e:
 
 # Get all volunteers with available times according to the job
 try:
-	cursor.execute("SELECT job_time_start FROM VMS_jobs WHERE job_id = %s",[data['jobId']])
+	cursor.execute(getJobTimeStart,[data['jobId']])
 	(time_start,) = cursor.fetchone()
 except Exception as e:
 	print("Status: 400 Invalid MySQL Request(Could not get times from job_id)\n")
@@ -47,7 +51,7 @@ except Exception as e:
 	exit(1)
 
 try:
-	cursor.execute("SELECT job_time_end FROM VMS_jobs WHERE job_id = %s",[data['jobId']])
+	cursor.execute(getJobTimeEnd,[data['jobId']])
 	(time_end,) = cursor.fetchone()
 except Exception as e:
 	print("Status: 400 Invalid MySQL Request(Could not get times from job_id)\n")
@@ -56,7 +60,7 @@ except Exception as e:
 	exit(1)
 
 try:
-	cursor.execute("SELECT person_pk FROM VMS_voluteer_availability WHERE free_time_start BETWEEN '2017-01-01 06:00:00' AND '2017-01-01 07:00:00'")
+	cursor.execute(getAvailablePerson,[time_start,time_end])
 	return_data = []
 	people = cursor.fetchall()
 	for person in people:

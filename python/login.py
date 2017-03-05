@@ -8,7 +8,7 @@ import cgitb; cgitb.enable()
 form = cgi.FieldStorage()
 
 data = {'email':form.getvalue("email"), 'attemptedPassword':form.getvalue("password")}
-#data = {'email':'admin','attemptedPassword':'root'}
+#data = {'email':'wow@email.com','attemptedPassword':'password'}
 output = {}
 
 try:
@@ -73,6 +73,7 @@ except Exception as e:
 	print e
 	exit(1)
 
+#hash the password using sha512 and check if it matches stored hash
 try:
 	if p == hashlib.sha512(s + data['attemptedPassword']).hexdigest():
 		cursor = connection.cursor()
