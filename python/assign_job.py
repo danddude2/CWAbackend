@@ -1,18 +1,13 @@
 #!/usr/bin/python2.7
 import cgi
-from helper import connectDb, sendJson
+from helper import connectDb, sendJson, datetime_to_time_node
 import re
 import MySQLdb
 import cgitb; cgitb.enable()
-import datetime
-from datetime import date
-from datetime_parser import datetime_period_to_node
-
 
 form = cgi.FieldStorage()
 data = {'eventId':form.getvalue("eventId"),'jobId':form.getvalue("jobId"),'volunteerId':form.getvalue("volunteerId")}
-#data = {'eventId':'1','jobId':'5','volunteerId':'1'}
-
+#data = {'eventId':'7','jobId':'12','volunteerId':'7'}
 
 # Connect to database
 try:
@@ -30,10 +25,15 @@ if not(data["eventId"] and data['jobId'] and data["volunteerId"]):
 	print("Some JSON value is empty")
 	exit(1)
 
-
+getEventSQL = "SELECT * FROM VMS_events WHERE event_id = %s"
+getPersonPkSQL = "SELECT * FROM VMS_persons WHERE person_pk = %s"
+getJobSQL = "SELECT job_time_start,job_time_end,person_pk FROM VMS_jobs WHERE job_id = %s"
+checkTimeSQL = "SELECT job_id from VMS_volunteer_availability WHERE person_pk = %s and free_time_start = %s AND event_id = %s"
+updateJobSQL = "UPDATE VMS_volunteer_availability SET job_id = %s WHERE free_time_start = %s"
+addVolIDSQL = "UPDATE VMS_jobs SET person_pk = %s WHERE job_id = %s"
 # Check if the event_id is valid
 try:
-	cursor.execute("SELECT * FROM VMS_events WHERE event_id = %s",[data['eventId']])
+	cursor.execute(getEventSQL,[data['eventId']])
 	if cursor.rowcount < 1:
 		print("Status: 400 Event_id does not exist in table VMS_events\n")
 		print("Event_id does not exist in table VMS_events")
@@ -46,7 +46,7 @@ except Exception as e:
 
 # Check if the volunteer_id is valid
 try:
-	cursor.execute("SELECT * FROM VMS_persons WHERE person_pk = %s",[data['volunteerId']])
+	cursor.execute(getPersonPkSQL,[data['volunteerId']])
 	if cursor.rowcount < 1:
 		print("Status: 400 volunteer_id does not exist in table VMS_persons\n")
 		print("volunteer_id does not exist in table VMS_persons")
@@ -60,7 +60,7 @@ except Exception as e:
 # Check if the job_id is valid
 # Pull datetime info from VMS_jobs according to job_id
 try:
-	cursor.execute("SELECT job_time_start,job_time_end,person_pk FROM VMS_jobs WHERE job_id = %s",[data['jobId']])
+	cursor.execute(getJobSQL,[data['jobId']])
 	if cursor.rowcount < 1:
 		print("Status: 400 Job_id does not exist in table VMS_events\n")
 		print("Job_id does not exist in table VMS_events")
@@ -75,16 +75,16 @@ except Exception as e:
 
 # Check if job is already assigned to someone.
 if (str(return_data[0][2]) != 'None'):
-	print("Status: 400 Job is already assigned to someone, person_pk: %s\n",str(return_data[0][2]))
-	print("Job is already assigned to someone, person_pk: " + str(return_data[0][2]))
+	print("Status: 400 Job is already assigned to someone\n")
+	print("Job is already assigned to someone")
 	exit(1)
 
 
 # Check if volunteer availability is matching job time.
-for dt in datetime_period_to_node(str(return_data[0][0]),str(return_data[0][1])):
+for dt in datetime_to_time_node(str(return_data[0][0]),str(return_data[0][1])):
 	dt += ':00'
 	try:
-		cursor.execute("SELECT job_id from VMS_volunteer_availability WHERE person_pk = %s and free_time_start = %s AND event_id = %s",[data['volunteerId'],dt,data['eventId']])
+		cursor.execute(checkTimeSQL,[data['volunteerId'],dt,data['eventId']])
 		if cursor.rowcount < 1:
 			print("Status: 400 volunteer availability does not match job time: some time nodes do not exist\n")
 			print("volunteer availability does not match job time: some time nodes do not exist")
@@ -102,20 +102,19 @@ for dt in datetime_period_to_node(str(return_data[0][0]),str(return_data[0][1]))
 
 
 # Update job_id in VMS_volunteer_availability
-for dt in datetime_period_to_node(str(return_data[0][0]),str(return_data[0][1])):
+for dt in datetime_to_time_node(str(return_data[0][0]),str(return_data[0][1])):
 	dt += ':00'
 	try:
-		cursor.execute("UPDATE VMS_volunteer_availability SET job_id = %s WHERE free_time_start = %s",[data['jobId'],dt])
+		cursor.execute(updateJobSQL,[data['jobId'],dt])
 		connection.commit()
 	except Exception as e:
 		print("Status: 400 Invalid MySQL Request(Update job_id in VMS_volunteer_availability)\n")
 		print e
 		exit(1)
 
-
 # Update volunteer_id in VMS_jobs
 try:
-	cursor.execute("UPDATE VMS_jobs SET person_pk = %s WHERE job_id = %s",[data['volunteerId'],data['jobId']])
+	cursor.execute(addVolIDSQL,[data['volunteerId'],data['jobId']])
 	connection.commit()
 except Exception as e:
 	print("Status: 400 Invalid MySQL Request(Update job_id in Update volunteer_id in VMS_jobs)\n")
@@ -126,4 +125,3 @@ except Exception as e:
 print ("Content-type: application/json")
 print ("Status: 200 Login OK\n")
 print sendJson({'Success':True})
-
