@@ -1,79 +1,54 @@
 #!/usr/bin/python2.7
-import cgitb; cgitb.enable()
-import MySQLdb
 import cgi
-import re
-try: import simplejson as json
-except ImportError: import json
+from helper import connectDb, sendJson
+import MySQLdb
+import cgitb; cgitb.enable()
 
-
-
-
-#form = cgi.FieldStorage()
+form = cgi.FieldStorage()
 # Fake data:
-data = {'job_name':'drive_people_back'}
-
-
-
-
+#data = {'job_id':'12'}
+data ={ 'job_id':form.getvalue('jobId')}
 # Connect to database
 try:
-    conn = MySQLdb.connect(user='root', passwd = '2511', db = 'cwajazz9_vms')
-    c = conn.cursor()
+	cursor, connection = connectDb()
 except Exception as e:
-    print("Status: Database connection initiation error")
-    exit(1)
-
-
+	print("Status: 500 Database Connection Error\n")
+	print e
+	exit(1)
 
 # Check if the input jason value is valid
-if not(data["job_name"]):
-	print("Status: Some JSON value is empty\n")
+if not(data["job_id"]):
+	print("Status: 400 Some JSON value is empty\n")
 	exit(1)
 
 
-
-# Check if the job_name already exist in VMS_jobs and find the corresponding job_id
-try:
-	c.execute("select job_id from vms_jobs where job_name = %s",[data['job_name']])
-	if c.rowcount == 0:
-		print("Status: job_name does not exist in VMS_jobs")
-		exit(1)
-except Exception as e:
-	print("Status: Invalid MySQL Request(check job_id duplication")
-	exit(1)
-
-
-
+getJobInfo = "SELECT * FROM VMS_jobs WHERE job_id = %s"
 # Return the information corresponding to the input job_name in table vms_jobs
 try:
-	c.execute("select job_id,event_id,job_time_start,job_time_end,location,job_description,volunteer_needed,volunteers_assigned from vms_jobs where job_name = %s",[data['job_name']])
-	return_data = c.fetchall()
+	cursor.execute(getJobInfo,[data['job_id']])
+	return_data = cursor.fetchall()
 except Exception as e:
-	print("Status: Invalid MySQL Request(pull data from vms_jobs with job_name")
+	print("Status: 400 Invalid MySQL Request(pull data from VMS_jobs with event_id\n")
+	print e
 	exit(1)
 
-
-
-# Insert data into josn format
-out_data = {}
-for i in range(len(return_data)):
-	out_data.update({"job_id"+str(i):int(return_data[i][0])})
-	out_data.update({"event_id"+str(i):return_data[i][1]})
-	out_data.update({"job_time_start"+str(i):str(return_data[i][2])})
-	out_data.update({"job_time_end"+str(i):str(return_data[i][3])})
-	out_data.update({"location"+str(i):return_data[i][4]})
-	out_data.update({"job_description"+str(i):return_data[i][5]})
-	out_data.update({"volunteer_needed"+str(i):return_data[i][6]})
-	out_data.update({"volunteers_assigned"+str(i):return_data[i][7]})
-
-
-print out_data
-
-
-
-
-
-
-
-
+try:
+	# Insert data into josn format
+	out_data = {}
+	for i in range(len(return_data)):
+		job = {}
+		job.update({'event_id':int(return_data[i][1])})
+		job.update({'person_pk':return_data[i][2]})
+		job.update({'job_time_start':str(return_data[i][3])})
+		job.update({'job_time_end':str(return_data[i][4])})
+		job.update({'location':return_data[i][5]})
+		job.update({'job_description':return_data[i][6]})
+		job.update({'job_name':return_data[i][7]})
+		out_data.update({str(return_data[i][0]):job})
+	print("Content-type: application/json")
+	print("Status: 200 OK\n")
+	print sendJson(out_data)
+except Exception as e:
+	print("Status: 500 Database Connection Error\n")
+	print e
+	exit(1)
