@@ -3,58 +3,51 @@ import cgitb; cgitb.enable()
 import MySQLdb
 import cgi
 import re
-try: import simplejson as json
-except ImportError: import json
+from helper import connectDb, sendJson
 
-
-
-
-#form = cgi.FieldStorage()
+form = cgi.FieldStorage()
 # Fake data:
-data = {'skill_name':'driver','skill_description':'drive a car'}
+data = {'skill_name':form.getvalue('skillName'),'skill_description':form.getvalue('skillDiscription')}
+#data = {'skill_name':'helium','skill_description':'use a helium tank'}
 
-
-
-
-# Connect to database
+#Connect to database
 try:
-    conn = MySQLdb.connect(user='root', passwd = '2511', db = 'cwajazz9_vms')
-    c = conn.cursor()
+	cursor, connection = connectDb()
 except Exception as e:
-    print("Status: Database connection initiation error")
-    exit(1)
-
+	print("Status: 500 Database Connection Error\n")
+	print e
+	exit(1)
 
 # Check if the input jason value is valid
 if not(data["skill_name"] and data["skill_description"]):
-	print("Status: Some JSON value is empty\n")
+	print("Status: 400 Request value is empty\n")
 	exit(1)
 
-'''
+checkSkillSQL = "SELECT skill_id FROM VMS_skills WHERE skill_name = %s"
 # Run search_skill.py before create skill, therefore no need to check duplication anymore
 # Check duplication: if the skill_name already exist in VMS_skills and find the corresponding skill_id
 try:
-	c.execute("select skill_id from vms_skills where skill_name = %s",[data['skill_name']])
-	if c.rowcount > 0:
-		print("Status: skill_name already exist in VMS_skills")
+	cursor.execute(checkSkillSQL,[data['skill_name']])
+	if cursor.rowcount > 0:
+		print("Status: 400 skill_name already exist in VMS_skills\n")
+		print e
 		exit(1)
 except Exception as e:
-	print("Status: Invalid MySQL Request(check skill_id duplication")
+	print("Status: 400 Invalid MySQL Request(check skill_id duplication\n")
+	print e
 	exit(1)
-'''
 
+insertSkillSQL = "INSERT INTO VMS_skills(skill_name,skill_description) values(%s,%s);"
 # Insert the skill_name and skill_description into vms_skill
 try:
-	c.execute("insert into vms_skills(skill_name,skill_description)values(%s,%s);",[data['skill_name'],data['skill_description']])
-	conn.commit()
+	cursor.execute(insertSkillSQL,[data['skill_name'],data['skill_description']])
+	connection.commit()
 except Exception as e:
 	print("Status: Invalid MySQL Request(insert value into vms_voluteer_availability)\n")
+	print e
 	exit(1)
 
-
-
-print 'Status: Successfully created skill ! '
-
-
-
-
+print("Content-type: application/json")
+print("Status: 200 Event created\n")
+success = {'Success':True}
+print sendJson(success)
