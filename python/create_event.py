@@ -6,7 +6,7 @@ import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
 data = { 'eventname':form.getvalue("eventName"), 'startdate':form.getvalue("startDate"), 'enddate':form.getvalue("endDate")}
-#data = { 'eventname':"the best event", 'startdate':'2012-01-01', 'enddate':'2012-01-02'}
+#data = { 'eventname':"Party", 'startdate':'2017-05-28', 'enddate':'2017-06-03'}
 
 try:
 	cursor, connection = connectDb()
@@ -37,7 +37,7 @@ try:
 		connection.commit()
 		cursor.close()
 		print("Status: 200 Event created\n")
-		success = {'success':True}
+		success = {'Success':True}
 		print sendJson(success)
 	else:
 		print("Status: 400 Event already in database\n")
