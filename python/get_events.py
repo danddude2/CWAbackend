@@ -2,7 +2,7 @@
 import cgitb; cgitb.enable()
 import MySQLdb
 import cgi
-from helper import connectDb, sendJson, encrypt
+from helper import connectDb, days_inbetween, sendJson
 import cgitb; cgitb.enable()
 
 try: import simplejson as json
@@ -16,12 +16,13 @@ except Exception as e:
 	print e
 	exit(1)
 
+getEventsSQL = "SELECT * from VMS_events"
 # Get information from database
 try:
-	cursor.execute("SELECT * from VMS_events")
+	cursor.execute(getEventsSQL)
 	return_data = cursor.fetchall()
 except Exception as e:
-	print("Status: 200 Invalid SQL\n")
+	print("Status: 400 Invalid SQL\n")
 	exit(1)
 
 try:
@@ -30,11 +31,11 @@ try:
 	for i in range(len(return_data)):
 		event = {}
 		event.update({'event_name':return_data[i][1]})
-		event.update({'start_date':str(return_data[i][3])})
-		event.update({'end_date':str(return_data[i][4])})
+		event.update({'eventDays':days_inbetween(str(return_data[i][2]),str(return_data[i][3]))})
 		data.update({str(return_data[i][0]):event})
 
-	print "Content-type: application/json\n"
+	print "Content-type: application/json"
+	print("Status: 400 Invalid SQL\n")
 	print ""
 	print sendJson(data)
 except Exception as e:
