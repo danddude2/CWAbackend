@@ -6,7 +6,7 @@ import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
 data = {'personId':form.getvalue("personId"), 'eventId':form.getvalue("eventId")}
-#data = {'personId':14816,'eventId':1}
+#data = {'personId':'7','eventId':'7'}
 # Connect to database
 try:
 	cursor, connection = connectDb()
@@ -23,9 +23,14 @@ if not(data["personId"] and data["eventId"]):
 	print("Some JSON value is empty")
 	exit(1)
 
+getPersonSQL = "SELECT * FROM VMS_persons WHERE person_pk = %s"
+checkSignUpSQL = "SELECT * FROM VMS_volunteer_availability WHERE person_pk = %s"
+getAvailVolnSQL = "SELECT job_id FROM VMS_jobs WHERE person_pk = %s"
+
+
 # Check if the jobId_id is valid
 try:
-	cursor.execute("SELECT * FROM VMS_persons WHERE person_pk = %s",[data['personId']])
+	cursor.execute(getPersonSQL,[data['personId']])
 	if cursor.rowcount < 1:
 		print("Status: 400 Person_id does not exist in table VMS_persons\n")
 		print("persons_id does not exist in table VMS_persons")
@@ -37,7 +42,7 @@ except Exception as e:
 
 # Check if they have alreay signed up
 try:
-	cursor.execute("SELECT * FROM VMS_voluteer_availability WHERE person_pk = %s",[data['personId']])
+	cursor.execute(checkSignUpSQL,[data['personId']])
 	if cursor.rowcount < 1:
         	print"Content-type: application/json"
         	print"Status: 200 OK\n"
@@ -50,7 +55,7 @@ except Exception as e:
 
 # Get all volunteers with available times according to the job
 try:
-	cursor.execute("SELECT * FROM VMS_job_assignments WHERE person_pk = %s",[data['personId']])
+	cursor.execute(getAvailVolnSQL,[data['personId']])
 	return_data = []
 	jobs = cursor.fetchall()
 	for job in jobs:
