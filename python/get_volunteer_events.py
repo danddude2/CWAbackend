@@ -7,7 +7,7 @@ import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
 data = {'volunteerId':form.getvalue("volunteerId")}
-#data = {'volunteerId':'1'}
+#data = {'volunteerId':'8'}
 
 
 # Connect to database
