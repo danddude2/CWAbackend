@@ -53,7 +53,7 @@ except Exception as e:
 	print e
 	exit(1)
 
-# Get all volunteers with available times according to the job
+# Get all jobIds with according to the volunteerId
 try:
 	cursor.execute(getAvailVolnSQL,[data['personId']])
 	return_data = []
