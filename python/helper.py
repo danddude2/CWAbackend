@@ -135,12 +135,3 @@ def time_node_to_datetime(time_node_array):
         time_ranges.append(str(start_time) + ' - ' + str(end_time))
         i += 1
     return time_ranges
-
-def time_range_formating(time_range):
-    formated = []
-    for dates in time_range:
-        date = dates[0:11]
-        start_time = dates[11:19]
-        end_time = dates[33:41]
-        formated.append(str(date) + ' ' + str(start_time) + '-' + str(end_time))
-    return formated

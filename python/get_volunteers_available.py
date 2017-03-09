@@ -26,7 +26,8 @@ if not(data["jobId"]):
 checkJobSQL ="SELECT * FROM VMS_jobs WHERE job_id = %s"
 getJobTimeStart ="SELECT job_time_start FROM VMS_jobs WHERE job_id = %s"
 getJobTimeEnd ="SELECT job_time_end FROM VMS_jobs WHERE job_id = %s"
-getAvailablePerson = "SELECT person_pk FROM VMS_volunteer_availability WHERE free_time_start BETWEEN %s AND %s"
+getEventId ="SELECT event_id FROM VMS_jobs WHERE job_id = %s"
+getAvailablePerson = "SELECT person_pk FROM VMS_volunteer_availability WHERE job_id IS NULL AND event_id = %s AND free_time_start BETWEEN %s AND %s"
 # Check if the jobId_id is valid
 try:
 	cursor.execute(checkJobSQL,[data['jobId']])
@@ -36,6 +37,16 @@ try:
 		exit(1)
 except Exception as e:
 	print("Status: 400 Invalid MySQL Request(check if event_id exist in VMS_events)\n")
+	print e
+	exit(1)
+
+
+try:
+	cursor.execute(getEventId,[data['jobId']])
+	(eventId,) = cursor.fetchone()
+except Exception as e:
+	print("Status: 400 Invalid MySQL Request(Could not eventId from job_id)\n")
+	print("Invalid MySQL Request(Get eventId from job_id)")
 	print e
 	exit(1)
 
@@ -60,7 +71,7 @@ except Exception as e:
 	exit(1)
 
 try:
-	cursor.execute(getAvailablePerson,[time_start,time_end])
+	cursor.execute(getAvailablePerson,[eventId,time_start,time_end])
 	return_data = []
 	people = cursor.fetchall()
 	for person in people:

@@ -2,9 +2,8 @@
 import cgitb; cgitb.enable()
 import MySQLdb
 import cgi
-from helper import connectDb, sendJson, time_node_to_datetime, time_range_formating
+from helper import connectDb, sendJson, time_node_to_datetime
 import cgitb; cgitb.enable()
-import datetime
 
 form = cgi.FieldStorage()
 data = {'personId': '22','eventId':'1'}
@@ -36,13 +35,13 @@ except Exception as e:
     exit(1)
 
 try:
-    timeRange = time_range_formating(time_node_to_datetime(available_times))
+    timeRange = time_node_to_datetime(available_times)
     out_data = {"availableTimes": timeRange}
     print "Content-type: application/json"
     print("Status: 200 OK\n")
     print ""
     print sendJson(out_data)
 except Exception as e:
-        print("Status: 400 Cannot Get Times\n")
-        print e
-        exit(1)
+	print("Status: 400 Cannot Get Times\n")
+	print e
+	exit(1)
