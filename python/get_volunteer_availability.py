@@ -6,8 +6,8 @@ from helper import connectDb, sendJson, time_node_to_datetime
 import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
-data = {'personId': '22','eventId':'1'}
-#data = {'personId':form.getvalue("personId"), 'eventId':form.getvalue("eventId")}
+#data = {'personId': '22','eventId':'1'}
+data = {'personId':form.getvalue("personId"), 'eventId':form.getvalue("eventId")}
 
 available_times = []
 

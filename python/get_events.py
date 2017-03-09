@@ -32,10 +32,10 @@ try:
 		data.update({str(return_data[i][0]):event})
 
 	print "Content-type: application/json"
-	print("Status: 400 Invalid SQL\n")
+	print("Status: 200 OK\n")
 	print ""
 	print sendJson(data)
 except Exception as e:
-		print("Status: 400 Cannot Get Events\n")
-		print e
-		exit(1)
+	print("Status: 400 Cannot Get Events\n")
+	print e
+	exit(1)
