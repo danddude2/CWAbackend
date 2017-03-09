@@ -19,8 +19,8 @@ def giant_datetime_object_to_array(datetime_object):
 
 
 form = cgi.FieldStorage()
-data = {'eventId':form.getvalue("eventId"),'volunteerId':form.getvalue("volunteerId"),'time':form.getvalue("time")}
-#data = {'eventId':'7','volunteerId':'7','time':{'2017-05-28':['00:00-08:00'],'2017-01-02':['13:00-14:00','15:00-17:30']}}
+data = {'eventId':form.getvalue("eventId"),'volunteerId':form.getvalue("volunteerId"),'time':eval(form.getvalue("time"))}
+#data = {'eventId':'1','volunteerId':'10','time':eval("{'2017-07-28':['00:00-08:00'],'2017-07-02':['13:00-14:00','15:00-17:30'],'2017-07-03':[]}")}
 
 # Connect to database
 try:
@@ -68,28 +68,32 @@ except Exception as e:
 	print e
 	exit(1)
 
+try:
+	# Parse data and insert them into vms_volunteer_availability table
+	for datetime in giant_datetime_object_to_array(data['time']):
+		try:
+			cursor.execute(getAvailabilitySQL,[data['eventId'],data['volunteerId'],datetime])
+			if cursor.rowcount == 0:
+				add_event = ("INSERT INTO VMS_volunteer_availability(event_id,person_pk,free_time_start)values(%s,%s,%s)")
+				add_event_values = ([data['eventId'],data['volunteerId'],datetime])
 
-# Parse data and insert them into vms_volunteer_availability table
-for datetime in giant_datetime_object_to_array(data['time']):
-	try:
-		cursor.execute(getAvailabilitySQL,[data['eventId'],data['volunteerId'],datetime])
-		if cursor.rowcount == 0:
-			add_event = ("INSERT INTO VMS_volunteer_availability(event_id,person_pk,free_time_start)values(%s,%s,%s)")
-			add_event_values = ([data['eventId'],data['volunteerId'],datetime])
-
-			try:
-				cursor.execute(add_event,add_event_values)
-				connection.commit()
-			except Exception as e:
-				connection.rollback()
-				print("Status: 400 Invalid MySQL Request(insert value into VMS_volunteer_availability)\n")
-				print("Invalid MySQL Request(insert value into VMS_volunteer_availability)")
-				print e
-				exit(1)
-	except Exception as e:
-		print("Status: 400 Invalid MySQL Request(check if data already exists)\n")
-		print e
-		exit(1)
+				try:
+					cursor.execute(add_event,add_event_values)
+					connection.commit()
+				except Exception as e:
+					connection.rollback()
+					print("Status: 400 Invalid MySQL Request(insert value into VMS_volunteer_availability)\n")
+					print("Invalid MySQL Request(insert value into VMS_volunteer_availability)")
+					print e
+					exit(1)
+		except Exception as e:
+			print("Status: 400 Invalid MySQL Request(check if data already exists)\n")
+			print e
+			exit(1)
+except Exception as e:
+	print("Status: 400 Invalid MySQL Request(check if data already exists)\n")
+	print e
+	exit(1)
 
 print"Content-type: application/json"
 print"Status: 200 Login OK\n"

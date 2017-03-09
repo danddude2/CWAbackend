@@ -2,15 +2,15 @@
 import cgitb; cgitb.enable()
 import MySQLdb
 import cgi
-from helper import connectDb, sendJson
+from helper import connectDb, sendJson, time_node_to_datetime, time_range_formating
 import cgitb; cgitb.enable()
 import datetime
 
 form = cgi.FieldStorage()
-#data = {'personId': '3'}
-data = {'personId':form.getvalue("personId")}
+data = {'personId': '22','eventId':'1'}
+#data = {'personId':form.getvalue("personId"), 'eventId':form.getvalue("eventId")}
+
 available_times = []
-booked_times =[]
 
 # Connect to database
 try:
@@ -20,12 +20,11 @@ except Exception as e:
     print e
     exit(1)
 
-getAvailableTimesSQL = "SELECT free_time_start FROM VMS_volunteer_availability WHERE person_pk = %s and job_id is NULL"
-getBookedTimesSQL = "SELECT free_time_start FROM VMS_volunteer_availability WHERE person_pk = %s and job_id is not NULL"
+getAvailableTimesSQL = "SELECT free_time_start FROM VMS_volunteer_availability WHERE person_pk = %s and event_id = %s"
 
 # Get information from database
 try:
-    cursor.execute(getAvailableTimesSQL,[data['personId']])
+    cursor.execute(getAvailableTimesSQL,[data['personId'],data['eventId']])
     avail = cursor.fetchall()
     for times in avail:
         (t,) = times
@@ -37,18 +36,8 @@ except Exception as e:
     exit(1)
 
 try:
-    cursor.execute(getBookedTimesSQL,[data['personId']])
-    booked = cursor.fetchall()
-    for times in booked:
-        (b,) = times
-        b = b.strftime('%Y-%m-%d %H:%M:%S')
-        booked_times.append(b)
-except Exception as e:
-    print("Status: 400 Invalid SQL\n")
-    print e
-    exit(1)
-try:
-    out_data = {"availableTimes":available_times,"bookedTimes":booked_times}
+    timeRange = time_range_formating(time_node_to_datetime(available_times))
+    out_data = {"availableTimes": timeRange}
     print "Content-type: application/json"
     print("Status: 200 OK\n")
     print ""

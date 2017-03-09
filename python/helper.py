@@ -113,3 +113,34 @@ def days_inbetween(dt_start,dt_end):
 			datetimeNodes.append(myDate(dt_start))
 	datetimeNodes.append(myDate(dt_end))
 	return datetimeNodes
+
+def string_to_datetime(dt_string):
+    return datetime.datetime.strptime(dt_string,"%Y-%m-%d %H:%M:%S")
+
+def time_node_to_datetime(time_node_array):
+    time_node_array.sort()
+    arraySize = len(time_node_array) - 1
+    time_ranges = []
+    i = 0
+    while i <= arraySize :
+        start_time = string_to_datetime(time_node_array[i])
+        adjTime = start_time + datetime.timedelta(minutes = 30)
+        if i < arraySize:
+            while string_to_datetime(time_node_array[i + 1]) == adjTime:
+                i += 1
+                adjTime = adjTime + datetime.timedelta(minutes = 30)
+                if i == arraySize:
+                    break
+        end_time = string_to_datetime(time_node_array[i])
+        time_ranges.append(str(start_time) + ' - ' + str(end_time))
+        i += 1
+    return time_ranges
+
+def time_range_formating(time_range):
+    formated = []
+    for dates in time_range:
+        date = dates[0:11]
+        start_time = dates[11:19]
+        end_time = dates[33:41]
+        formated.append(str(date) + ' ' + str(start_time) + '-' + str(end_time))
+    return formated
