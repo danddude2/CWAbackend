@@ -119,19 +119,33 @@ def string_to_datetime(dt_string):
 
 def time_node_to_datetime(time_node_array):
     time_node_array.sort()
-    arraySize = len(time_node_array) - 1
-    time_ranges = []
-    i = 0
-    while i <= arraySize :
-        start_time = string_to_datetime(time_node_array[i])
-        adjTime = start_time + datetime.timedelta(minutes = 30)
-        if i < arraySize:
-            while string_to_datetime(time_node_array[i + 1]) == adjTime:
-                i += 1
-                adjTime = adjTime + datetime.timedelta(minutes = 30)
-                if i == arraySize:
-                    break
-        end_time = string_to_datetime(time_node_array[i])
-        time_ranges.append(str(start_time) + ' - ' + str(end_time))
-        i += 1
-    return time_ranges
+    date = str(time_node_array[0])[0:10]
+    size = len(time_node_array) - 1
+    nodes = []
+    out_data = {}
+    index = 0
+    while index < size:
+        while index < size and str(time_node_array[index])[0:10] == date:
+            nodes.append(time_node_array[index])
+            index += 1
+        if index == size:
+            nodes.append(time_node_array[index])
+        out_data.update({str(date):timeranges(nodes)})
+        date = str(time_node_array[index])[0:10]
+        nodes = []
+    return out_data
+
+def timeranges(times):
+    index = 0
+    size = len(times)-1
+    nodes = []
+    while index <= size:
+        start_time = string_to_datetime(times[index])
+        adj_time = start_time + datetime.timedelta(minutes = 30)
+        while index < size and string_to_datetime(times[index + 1]) == adj_time:
+            index += 1
+            adj_time = adj_time + datetime.timedelta(minutes = 30)
+        end_time = string_to_datetime(times[index])
+        nodes.append(str(start_time)[11:16] + "-" + str(end_time)[11:16])
+        index += 1
+    return nodes
