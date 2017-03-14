@@ -6,7 +6,7 @@ import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
 # Fake data:
-#data = {'job_id':'12'}
+#data = {'job_id':'4'}
 data ={ 'job_id':form.getvalue('jobId')}
 # Connect to database
 try:
@@ -44,6 +44,8 @@ try:
 		job.update({'location':return_data[i][5]})
 		job.update({'job_description':return_data[i][6]})
 		job.update({'job_name':return_data[i][7]})
+		job.update({'job_status':return_data[i][8]})
+
 		out_data.update({str(return_data[i][0]):job})
 	print("Content-type: application/json")
 	print("Status: 200 OK\n")
