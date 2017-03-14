@@ -146,6 +146,8 @@ def timeranges(times):
             index += 1
             adj_time = adj_time + datetime.timedelta(minutes = 30)
         end_time = string_to_datetime(times[index])
+        if str(end_time)[11:16] != "23:30":
+            end_time = end_time + datetime.timedelta(minutes = 30)
         nodes.append(str(start_time)[11:16] + "-" + str(end_time)[11:16])
         index += 1
     return nodes
