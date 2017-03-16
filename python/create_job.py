@@ -6,11 +6,11 @@ import MySQLdb
 import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
-data = { 'event_id':form.getvalue("eventId"), 'job_name':form.getvalue("jobName"), "job_date":form.getvalue("jobDate"), "job_time_start":form.getvalue("startTime"), 'job_time_end':form.getvalue("endTime"), 'location':form.getvalue("location"), 'job_description':form.getvalue("jobDesciption")}
-#data = {'event_id':'7','job_name':'Make balloons','job_time_start':'2017-05-28 07:00:00','job_time_end':'2017-05-28 08:00:00','location':'C4C','job_description':'Make animals out of rubber'}
+data = { 'event_id':form.getvalue("eventId"), 'job_name':form.getvalue("jobName"), "job_date":form.getvalue("jobDate"), "job_time_start":form.getvalue("startTime"), 'job_time_end':form.getvalue("endTime"), 'location':form.getvalue("location"), 'job_description':form.getvalue("jobDescription")}
+#data = {'event_id':'1','job_name':'Make balloons','job_date':'2017-04-04','job_time_start':'07:00','job_time_end':'08:00','location':'C4C','job_description':'Make animals out of rubber'}
 
-data['job_time_start'] = str(data['job_date']) + ' ' + str(data['job_time_start'])
-data['job_time_end'] = str(data['job_date']) + ' ' + str(data['job_time_end'])
+data['job_time_start'] = str(data['job_date']) + ' ' + str(data['job_time_start'])+':00'
+data['job_time_end'] = str(data['job_date']) + ' ' + str(data['job_time_end'])+':00'
 # Connect to database
 try:
     cursor, connection = connectDb()
