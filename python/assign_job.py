@@ -7,7 +7,7 @@ import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
 data = {'eventId':form.getvalue("eventId"),'jobId':form.getvalue("jobId"),'volunteerId':form.getvalue("volunteerId")}
-#data = {'eventId':'7','jobId':'12','volunteerId':'7'}
+#data = {'eventId':'1','jobId':'10','volunteerId':'39'}
 
 # Connect to database
 try:
@@ -29,7 +29,7 @@ getEventSQL = "SELECT * FROM VMS_events WHERE event_id = %s"
 getPersonPkSQL = "SELECT * FROM VMS_persons WHERE person_pk = %s"
 getJobSQL = "SELECT job_time_start,job_time_end,person_pk FROM VMS_jobs WHERE job_id = %s"
 checkTimeSQL = "SELECT job_id from VMS_volunteer_availability WHERE person_pk = %s and free_time_start = %s AND event_id = %s"
-updateJobSQL = "UPDATE VMS_volunteer_availability SET job_id = %s WHERE free_time_start = %s"
+updateJobSQL = "UPDATE VMS_volunteer_availability SET job_id = %s WHERE free_time_start = %s And person_pk = %s"
 addVolIDSQL = "UPDATE VMS_jobs SET person_pk = %s WHERE job_id = %s"
 # Check if the event_id is valid
 try:
@@ -75,9 +75,14 @@ except Exception as e:
 
 # Check if job is already assigned to someone.
 if (str(return_data[0][2]) != 'None'):
-	print("Status: 400 Job is already assigned to someone\n")
-	print("Job is already assigned to someone")
-	exit(1)
+	old_person_id = return_data[0][2]
+	try:
+		cursor.execute("UPDATE VMS_volunteer_availability SET job_id = null WHERE job_id = %s AND person_pk = %s",[data['jobId'],old_person_id])
+		connection.commit()
+	except Exception as e:
+		print("Status: 400 Invalid MySQL Request\n")
+		print e
+		exit(1)
 
 
 # Check if volunteer availability is matching job time.
@@ -105,7 +110,7 @@ for dt in datetime_to_time_node(str(return_data[0][0]),str(return_data[0][1])):
 for dt in datetime_to_time_node(str(return_data[0][0]),str(return_data[0][1])):
 	dt += ':00'
 	try:
-		cursor.execute(updateJobSQL,[data['jobId'],dt])
+		cursor.execute(updateJobSQL,[data['jobId'],dt,data['volunteerId']])
 		connection.commit()
 	except Exception as e:
 		print("Status: 400 Invalid MySQL Request(Update job_id in VMS_volunteer_availability)\n")
