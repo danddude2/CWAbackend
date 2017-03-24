@@ -5,8 +5,8 @@ import MySQLdb
 import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
-data = {'eventId':form.getvalue("eventId"),'volunteerId':form.getvalue("volunteerId"),'date':form.getvalue("date"),'time':form.getvalue("time")}
-#data = {'eventId':'1','volunteerId':'5','date':'2017-04-03','time':'07:30-08:30'}
+#data = {'eventId':form.getvalue("eventId"),'volunteerId':form.getvalue("volunteerId"),'date':form.getvalue("date"),'time':form.getvalue("time")}
+data = {'eventId':'1','volunteerId':'5','date':'2017-04-03','time':'15:00-17:00'}
 
 # Connect to database
 try:
@@ -40,8 +40,6 @@ for node in datetimenode:
 		(jobId,) = cursor.fetchone()
 		if jobId == None:
 			cursor.execute(deletSQL,[data['eventId'],data['volunteerId'],node])
-		else:
-			pass
 	except Exception as e:
 		print("Status: 400 Invalid MySQL Request(delete data)\n")
 		print e

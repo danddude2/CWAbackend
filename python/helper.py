@@ -140,11 +140,15 @@ def timeranges(times):
     size = len(times)-1
     nodes = []
     while index <= size:
+        half_hour_count = 0
         start_time = string_to_datetime(times[index])
         adj_time = start_time + datetime.timedelta(minutes = 30)
         while index < size and string_to_datetime(times[index + 1]) == adj_time:
             index += 1
             adj_time = adj_time + datetime.timedelta(minutes = 30)
+            half_hour_count += 1
+            if half_hour_count >= 3:
+                break
         end_time = string_to_datetime(times[index])
         if str(end_time)[11:16] != "23:30":
             end_time = end_time + datetime.timedelta(minutes = 30)

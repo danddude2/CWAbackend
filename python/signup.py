@@ -6,7 +6,7 @@ from helper import connectDb, sendJson, encrypt
 import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
-data = { 'firstName':form.getvalue("firstName"), 'lastName':form.getvalue("lastName"), 'email':form.getvalue("email"),'phone':form.getvalue("phone"), 'password':form.getvalue("password"), "phone_type":form.getvalue("phoneProvider")}
+data = { 'firstName':form.getvalue("firstName"), 'lastName':form.getvalue("lastName"), 'email':form.getvalue("email"),'phone':form.getvalue("phone"), 'password':form.getvalue("password"), "phone_type":form.getvalue("phoneProvider"), "birth":form.getvalue("birth")}
 #data = { 'firstName':"party", 'lastName':"now", 'email':"wow@email.com",'phone':"1234567891", 'password':"password", "phone_type":"Verison"}
 
 try:
@@ -23,10 +23,10 @@ except Exception as e:
 	print e
 	exit(1)
 
-addPersonSQL = ("INSERT INTO VMS_persons(first_name, last_name, email, password, phone, phone_type, salt) VALUES(%s,%s,%s,%s,%s,%s,%s)")
+addPersonSQL = ("INSERT INTO VMS_persons(first_name, last_name, email, password, phone, phone_type, salt, date_of_birth) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)")
 checkPersonSQL = ("SELECT email FROM VMS_persons WHERE email=%s")
 checkPersonValues = (data['email'])
-addPersonValues = (data['firstName'],data['lastName'],data['email'], hashed, data['phone'], data['phone_type'], salt)
+addPersonValues = (data['firstName'],data['lastName'],data['email'], hashed, data['phone'], data['phone_type'], salt, data['birth'])
 
 try:
 	cursor.execute(checkPersonSQL,checkPersonValues)

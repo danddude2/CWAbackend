@@ -19,9 +19,23 @@ def giant_datetime_object_to_array(datetime_object):
 
 
 form = cgi.FieldStorage()
-data = {'eventId':form.getvalue("eventId"),'volunteerId':form.getvalue("volunteerId"),'time':eval(form.getvalue("time"))}
-#data = {'eventId':'1','volunteerId':'10','time':eval("{'2017-07-28':['00:00-08:00'],'2017-07-02':['13:00-14:00','15:00-17:30'],'2017-07-03':[]}")}
+data = {'eventId':form.getvalue("eventId"),'volunteerId':form.getvalue("volunteerId"),'time':eval(form.getvalue("time")),'personDesiredHours':eval(form.getvalue("personDesiredHours"))}
+#data = {'eventId':'1','volunteerId':'3','time':eval("{'2017-07-28':['00:00-08:00'],'2017-07-02':['13:00-14:00','15:00-17:30'],'2017-07-03':[]}"),'personDesiredHours':55}
 
+
+# Delete the empty element in data['time']
+try:
+	for key,value in data['time'].items():
+		if len(value) == 0:
+			del data['time'][key]
+			
+except Exception as e:
+	print("Status: 200 No availability given\n")
+	print e
+	print"Content-type: application/json"
+	print sendJson({"Success":True})
+	exit(1)
+	
 # Connect to database
 try:
 	cursor, connection = connectDb()
@@ -34,8 +48,9 @@ except Exception as e:
 
 # Check if the input jason value is valid
 if not(data["eventId"] and data["volunteerId"] and data['time']):
-	print("Status: 400 Some JSON value is empty\n")
-	print("Some JSON value is empty")
+	print"Content-type: application/json"
+	print("Status: 200 No availability given\n")
+	print sendJson({"Success":True})
 	exit(1)
 
 
@@ -95,6 +110,18 @@ except Exception as e:
 	print e
 	exit(1)
 
-print"Content-type: application/json"
+
+try:
+	cursor.execute("UPDATE VMS_persons SET desired_hours = %s WHERE person_pk = %s",[data['personDesiredHours'],data['volunteerId']])
+	connection.commit()
+except Exception as e:
+	connection.rollback()
+	print("Status: 400 Invalid MySQL Request\n")
+	print("Invalid MySQL Request")
+	print e
+	exit(1)
+
+	
 print"Status: 200 Login OK\n"
+print"Content-type: application/json"
 print sendJson({"Success":True})

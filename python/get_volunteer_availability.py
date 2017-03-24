@@ -20,6 +20,7 @@ except Exception as e:
     exit(1)
 
 getAvailableTimesSQL = "SELECT free_time_start FROM VMS_volunteer_availability WHERE person_pk = %s and event_id = %s"
+getDesiredHoursSQL = "SELECT desired_hours FROM VMS_persons WHERE person_pk = %s"
 
 # Get information from database
 try:
@@ -33,13 +34,21 @@ except Exception as e:
     print("Status: 400 Invalid SQL\n")
     print e
     exit(1)
+	
+try:
+    cursor.execute(getDesiredHoursSQL,[data['personId']])
+    (desired_hours,) = cursor.fetchone()
+    
+except Exception as e:
+    print("Status: 400 Invalid SQL\n")
+    print e
+    exit(1)	
 
 try:
     timeRange = time_node_to_datetime(available_times)
-    out_data = {"availableTimes": timeRange}
+    out_data = {"availableTimes": timeRange,"desiredHours":desired_hours}
     print "Content-type: application/json"
     print("Status: 200 OK\n")
-    print ""
     print sendJson(out_data)
 except Exception as e:
 	print("Status: 400 Cannot Get Times\n")

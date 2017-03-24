@@ -5,6 +5,9 @@ import cgi
 from helper import connectDb, days_inbetween, sendJson
 import cgitb; cgitb.enable()
 
+try: import simplejson as json
+except ImportError: import json
+
 # Connect to database
 try:
 	cursor, connection = connectDb()
@@ -19,7 +22,7 @@ try:
 	cursor.execute(getEventsSQL)
 	return_data = cursor.fetchall()
 except Exception as e:
-	print("Status: 400 Invalid SQL\n")
+	print("Status: 401 Invalid SQL\n")
 	exit(1)
 
 try:
