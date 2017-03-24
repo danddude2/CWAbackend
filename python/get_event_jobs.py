@@ -24,8 +24,11 @@ if not(data["event_id"]):
 
 getEventIdSQL = "SELECT * FROM VMS_events WHERE event_id = %s"
 getJobsSQL = "SELECT * FROM VMS_jobs WHERE event_id = %s"
+<<<<<<< HEAD
 getVolunteersSQL = "SELECT DISTINCT person_pk FROM VMS_volunteer_availability WHERE event_id =%s"
 getVoluteerNames = "SELECT first_name,last_name FROM VMS_persons WHERE person_pk = %s"
+=======
+>>>>>>> 4f4969e059049ee410e0a1656a660d216aaa32f8
 
 # Check if the event_id is valid
 try:
@@ -47,6 +50,7 @@ except Exception as e:
 	print e
 	exit(1)
 
+<<<<<<< HEAD
 #get users who have submitted time
 try:
 	cursor.execute(getVolunteersSQL,[data['event_id']])
@@ -70,26 +74,58 @@ try:
 	# Insert data into josn format
 	out_data = {}
 	jobs = {}
+=======
+try:
+	# Insert data into josn format
+	out_data = {}
+>>>>>>> 4f4969e059049ee410e0a1656a660d216aaa32f8
 	for i in range(len(return_data)):
 
 		job_time_date = str(return_data[i][3])[0:10]
 		job_time_start_hour = str(return_data[i][3])[11:16]
 		job_time_end_hour = str(return_data[i][4])[11:16]
+<<<<<<< HEAD
 
 		event = {}
 		event.update({'job_name':return_data[i][7]})
 		event.update({'event_id':int(return_data[i][1])})
 		event.update({'volunteer_id':return_data[i][2]})
+=======
+		
+		event = {}
+		event.update({'event_id':int(return_data[i][1])})
+		event.update({'volunteer_id':return_data[i][2]})
+		event.update({'first_name':None})
+		event.update({'last_name':None})
+		
+		if return_data[i][2] != None:
+			try:
+				cursor.execute('SELECT first_name,last_name FROM VMS_persons WHERE person_pk = %s',[return_data[i][2]])
+				volunteername = cursor.fetchall()
+			except Exception as e:
+				print("Status: 400 Invalid MySQL Request(pull data from VMS_jobs with event_id\n")
+				print e
+				exit(1)
+
+			event['first_name'] = volunteername[0][0]
+			event['last_name'] = volunteername[0][1]
+		
+>>>>>>> 4f4969e059049ee410e0a1656a660d216aaa32f8
 		event.update({'job_date':job_time_date})
 		event.update({'job_time_start':job_time_start_hour})
 		event.update({'job_time_end':job_time_end_hour})
 		event.update({'location':return_data[i][5]})
 		event.update({'job_description':return_data[i][6]})
+<<<<<<< HEAD
 		event.update({'job_status':return_data[i][8]})
 
 #
 		jobs.update({str(return_data[i][0]):event})
 		out_data.update({"jobs":jobs,"volunteers":volunteer_data})
+=======
+		event.update({'job_name':return_data[i][7]})
+		out_data.update({str(return_data[i][0]):event})
+>>>>>>> 4f4969e059049ee410e0a1656a660d216aaa32f8
 
 	print("Content-type: application/json")
 	print("Status: 200 OK\n")

@@ -86,9 +86,16 @@ if (str(return_data[0][2]) != 'None'):
 		cursor.execute("UPDATE VMS_volunteer_availability SET job_id = null WHERE job_id = %s AND person_pk = %s",[data['jobId'],old_person_id])
 		connection.commit()
 	except Exception as e:
+<<<<<<< HEAD
 		print("Status: 400 SQL update error (checkTimeSQL)\n")
 		print e
 		exit(1)
+=======
+		print("Status: 400 Invalid MySQL Request\n")
+		print e
+		exit(1)
+
+>>>>>>> 4f4969e059049ee410e0a1656a660d216aaa32f8
 
 # Check if volunteer available times match job times.
 # Edit to work for times not in 30min increments
