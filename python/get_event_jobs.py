@@ -3,7 +3,6 @@ import cgi
 from helper import connectDb, sendJson
 import MySQLdb
 import cgitb; cgitb.enable()
-
 form = cgi.FieldStorage()
 data = {'event_id':form.getvalue("eventId")}
 #data = {'event_id':'1'}
@@ -47,7 +46,6 @@ except Exception as e:
 	print e
 	exit(1)
 
-<<<<<<< HEAD
 #get users who have submitted time
 try:
 	cursor.execute(getVolunteersSQL,[data['event_id']])
@@ -60,19 +58,20 @@ try:
 	for i in volunteer_ids:
 		cursor.execute(getVoluteerNames,i)
 		[name] = cursor.fetchall()
-		volunteer_data.update({str(i):name})
+		firstName = name[0]
+		lastName = name[1]
+		nameDict = {'first':firstName,'last':lastName}
+		volunteer_data.update({str(i):nameDict})
 except Exception as e:
 	print("Status: 400 Invalid MySQL Request(pull data from VMS_jobs with event_id\n")
 	print e
 	exit(1)
-
 
 try:
 	# Insert data into josn format
 	out_data = {}
 	jobs = {}
 	for i in range(len(return_data)):
-
 		job_time_date = str(return_data[i][3])[0:10]
 		job_time_start_hour = str(return_data[i][3])[11:16]
 		job_time_end_hour = str(return_data[i][4])[11:16]

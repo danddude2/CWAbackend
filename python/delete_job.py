@@ -8,6 +8,7 @@ import cgitb; cgitb.enable()
 form = cgi.FieldStorage()
 
 data = {'job_id':form.getvalue("jobId")}
+#data = {'job_id':'22'}
 output = {}
 # Connect to database
 try:
@@ -16,7 +17,6 @@ except Exception as e:
 	print("Status: 400 Database Connection Error\n")
 	print e
 	exit(1)
-
 if not(data["job_id"]):
 	print("Status: 400 Request value is empty\n")
 	exit(1)
@@ -37,6 +37,7 @@ except Exception as e:
 try:
 	cursor.execute(deleteJobSQL,data['job_id'])
 	cursor.execute(removeAssigned,[personId,data['job_id']])
+	connection.commit()
 	output.update({'Success':True})
 	print "Content-type: application/json"
 	print("Status: 200 Invalid SQL\n")

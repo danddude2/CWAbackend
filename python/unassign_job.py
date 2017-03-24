@@ -6,23 +6,23 @@ import MySQLdb
 import cgitb; cgitb.enable()
 
 form = cgi.FieldStorage()
-data = {'jobId':form.getvalue("jobId"),'volunteerId':form.getvalue("volunteerId")}
+# Example input
 #data = {'eventId':'1','jobId':'10','volunteerId':'39'}
+data = {'jobId':form.getvalue("jobId"),'volunteerId':form.getvalue("volunteerId")}
 
 # Connect to database
 try:
 	cursor, connection = connectDb()
 except Exception as e:
-	print("Status: 400 Database Connection Error\n")
+	print("Status: 500 Database Connection Error\n")
 	print("Database Connection failed")
 	print e
 	exit(1)
 
-
-# Check if the input jason value is valid
+# Check if the input json value is valid
 if not(data['jobId'] and data["volunteerId"]):
-	print("Status: 400 Some JSON value is empty\n")
-	print("Some JSON value is empty")
+	print("Status: 400 One or more input values empty\n")
+	print("Json input value is empty")
 	exit(1)
 
 getPersonPkSQL = "SELECT * FROM VMS_persons WHERE person_pk = %s"
