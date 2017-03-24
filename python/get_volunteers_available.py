@@ -7,11 +7,6 @@ from datetime import date
 import cgitb; cgitb.enable()
 
 def person_filter(people,time_start,time_end):
-<<<<<<< HEAD
-
-=======
-	
->>>>>>> 4f4969e059049ee410e0a1656a660d216aaa32f8
 	# get list of people id with redundent data
 	people_redun = []
 	for i in people:
@@ -28,12 +23,8 @@ def person_filter(people,time_start,time_end):
 		diff = diff - 1
 	if time_end[14:15] == '3':
 		diff = diff + 1
-	# get person id with correct number of nodes and retrun list of people id
-<<<<<<< HEAD
+# get person id with correct number of nodes and retrun list of people id
 	out = []
-=======
-	out = [] 
->>>>>>> 4f4969e059049ee410e0a1656a660d216aaa32f8
 	for i in return_data:
 		if int(people_redun.count(i)) == diff:
 			out.append(int(i))
@@ -130,14 +121,8 @@ final_data = person_filter(people,time_start,time_end)
 out_data = {}
 
 try:
-
 	for person in final_data:
-
-<<<<<<< HEAD
 		# Get name
-=======
-		# Get name	
->>>>>>> 4f4969e059049ee410e0a1656a660d216aaa32f8
 		cursor.execute(getPersonName,[person])
 		(first,last,) = cursor.fetchone()
 		firstlast = first + ' ' + last
@@ -178,5 +163,3 @@ except Exception as e:
 print"Content-type: application/json"
 print"Status: 200 Login OK\n"
 print sendJson(out_data)
-
-
