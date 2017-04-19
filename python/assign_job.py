@@ -6,7 +6,7 @@ import MySQLdb
 import cgitb; cgitb.enable()
 
 # Admin File to assign volunteers to jobs
-# Takes in Event Id, JobId, Volunteer Id
+# Inputs - Event Id, JobId, Volunteer Id
 # Outputs- {Success:True}, 400
 
 form = cgi.FieldStorage()
@@ -17,13 +17,13 @@ data = {'eventId':form.getvalue("eventId"),'jobId':form.getvalue("jobId"),'volun
 try:
 	cursor, connection = connectDb()
 except Exception as e:
-	print("Status: 400 Database Connection Error\n")
+	print("Status: 500 Database Connection Error\n")
 	print("Database Connection failed")
 	print e
 	exit(1)
 
 
-# Check if the input jasn value is valid
+# Check if the input json value is valid
 if not(data["eventId"] and data['jobId'] and data["volunteerId"]):
 	print("Status: 400 Empty feilds\n")
 	print("Empty feilds, vaild eventId, jobId and volunteerId must be sent")

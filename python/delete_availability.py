@@ -4,6 +4,9 @@ from helper import connectDb, sendJson, hour_period_to_node
 import MySQLdb
 import cgitb; cgitb.enable()
 
+# Volunteer Side file Allows deletion of available times
+# Inputs - eventId,volunteerId,date,timerange
+
 form = cgi.FieldStorage()
 data = {'eventId':form.getvalue("eventId"),'volunteerId':form.getvalue("volunteerId"),'date':form.getvalue("date"),'time':form.getvalue("time")}
 #data = {'eventId':'1','volunteerId':'5','date':'2017-04-03','time':'07:30-08:30'}
@@ -16,7 +19,7 @@ except Exception as e:
 	print e
 	exit(1)
 
-# Check if the input jason value is valid
+# Check if the input json value is valid
 if not(data['eventId'] and data['volunteerId'] and data['date'] and data['time']):
 	print("Status: 400 Some JSON value is empty\n")
 	print("Feilds are not all filled")
@@ -27,9 +30,11 @@ datetimenode = []
 for node in hour_period_to_node(data['time']):
 	datetimenode.append(data['date']+' '+node+':00')
 
+# SQL
 deletSQL = 'DELETE FROM VMS_volunteer_availability WHERE event_id = %s and person_pk = %s and free_time_start = %s'
 isAssingedSQL ='SELECT job_id from VMS_volunteer_availability WHERE event_id = %s and person_pk = %s and free_time_start = %s'
 
+# Check if each node is already assigned if not delete
 for node in datetimenode:
 	try:
 		cursor.execute(isAssingedSQL,[data['eventId'],data['volunteerId'],node])
@@ -40,8 +45,6 @@ for node in datetimenode:
 		(jobId,) = cursor.fetchone()
 		if jobId == None:
 			cursor.execute(deletSQL,[data['eventId'],data['volunteerId'],node])
-		else:
-			pass
 	except Exception as e:
 		print("Status: 400 Invalid MySQL Request(delete data)\n")
 		print e

@@ -5,12 +5,18 @@ import re
 import MySQLdb
 import cgitb; cgitb.enable()
 
+# Creates Jobs for a specific event
+# Inputs - eventId,jobName,jobDate,startTime,endTime,location,jobDescription
+# Outputs - {sucess:True}, 400
+
 form = cgi.FieldStorage()
 data = { 'event_id':form.getvalue("eventId"), 'job_name':form.getvalue("jobName"), "job_date":form.getvalue("jobDate"), "job_time_start":form.getvalue("startTime"), 'job_time_end':form.getvalue("endTime"), 'location':form.getvalue("location"), 'job_description':form.getvalue("jobDescription")}
 #data = {'event_id':'1','job_name':'Make balloons','job_date':'2017-04-04','job_time_start':'07:00','job_time_end':'08:00','location':'C4C','job_description':'Make animals out of rubber'}
 
+# Converts time inputs from HH:MM to HH:MM:SS
 data['job_time_start'] = str(data['job_date']) + ' ' + str(data['job_time_start'])+':00'
 data['job_time_end'] = str(data['job_date']) + ' ' + str(data['job_time_end'])+':00'
+
 # Connect to database
 try:
     cursor, connection = connectDb()
@@ -19,7 +25,7 @@ except Exception as e:
     print e
     exit(1)
 
-# Check if the input jason value is valid
+# Check if the input json value is valid
 if not(data["event_id"] and data["job_name"] and data['job_time_start'] and data['job_time_end'] and data['location'] and data['job_description']):
     print("Status: 400 Some JSON value is empty\n")
     print("Feilds are not all filled")
@@ -31,6 +37,7 @@ if re.match('^\d\d\d\d\-\d\d\-\d\d\s\d\d\:\d\d\:\d\d$',data["job_time_end"]) == 
     print("Status: 400 Invalid datetime format\n")
     exit(1)
 
+# SQL statments
 checkEventId = "SELECT * FROM VMS_events WHERE event_id = %s"
 insertJob = "INSERT INTO VMS_jobs(event_id,job_name,job_time_start,job_time_end,location,job_description)values(%s,%s,%s,%s,%s,%s);"
 
@@ -50,7 +57,7 @@ try:
     cursor.execute(insertJob,[data['event_id'],data['job_name'],data['job_time_start'],data['job_time_end'],data['location'],data['job_description']])
     connection.commit()
     print"Content-type: application/json"
-    print"Status: 200 Login OK\n"
+    print"Status: 200 Job Created\n"
     print sendJson({'Success':True})
 except Exception as e:
     connection.rollback()

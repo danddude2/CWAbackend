@@ -2,15 +2,20 @@
 import cgitb; cgitb.enable()
 import MySQLdb
 import cgi
-from helper import connectDb, sendJson, time_node_to_datetime
+from helper import connectDb, sendJson, time_node_to_datetime_range
 import datetime
 from datetime import date
 import cgitb; cgitb.enable()
+
+# Returns all the volunteers names and their availability
+# input eventId
+# Output {Name:{date{times}}}
 
 form = cgi.FieldStorage()
 #data = {'eventId':'1'}
 data = {'eventId':form.getvalue("eventId")}
 out_data ={}
+
 # Connect to database
 try:
     cursor, connection = connectDb()
@@ -19,6 +24,7 @@ except Exception as e:
     print e
     exit(1)
 
+#SQL
 getVolunteers = "SELECT DISTINCT person_pk FROM VMS_volunteer_availability WHERE event_id = %s"
 getAvailableTimesSQL = "SELECT free_time_start FROM VMS_volunteer_availability WHERE person_pk = %s and event_id = %s"
 getDesiredHoursSQL = "SELECT desired_hours FROM VMS_persons WHERE person_pk = %s"
@@ -84,7 +90,7 @@ for ids in volunteer_array:
             job.update({'job_status':return_data[i][8]})
             job_data.update({str(return_data[i][0]):job})
 
-        timeRange = time_node_to_datetime(available_times)
+        timeRange = time_node_to_datetime_range(available_times)
         volunteer_data = {"availableTimes": timeRange,"desiredHours":desired_hours,"jobs":job_data}
         out_data.update({ids:volunteer_data})
     except Exception as e:

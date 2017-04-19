@@ -5,6 +5,11 @@ import cgi
 import re
 from helper import connectDb, sendJson
 
+# Not currently in use
+# Admin side file to create common skills that each job can have
+# Inputs - skillName,skillDiscription
+# Outputs - {Sucess:True},400
+
 form = cgi.FieldStorage()
 # Fake data:
 data = {'skill_name':form.getvalue('skillName'),'skill_description':form.getvalue('skillDiscription')}
@@ -18,12 +23,15 @@ except Exception as e:
 	print e
 	exit(1)
 
-# Check if the input jason value is valid
+# Check if the input json value is valid
 if not(data["skill_name"] and data["skill_description"]):
 	print("Status: 400 Request value is empty\n")
 	exit(1)
 
+#SQL
 checkSkillSQL = "SELECT skill_id FROM VMS_skills WHERE skill_name = %s"
+insertSkillSQL = "INSERT INTO VMS_skills(skill_name,skill_description) values(%s,%s);"
+
 # Run search_skill.py before create skill, therefore no need to check duplication anymore
 # Check duplication: if the skill_name already exist in VMS_skills and find the corresponding skill_id
 try:
@@ -37,7 +45,6 @@ except Exception as e:
 	print e
 	exit(1)
 
-insertSkillSQL = "INSERT INTO VMS_skills(skill_name,skill_description) values(%s,%s);"
 # Insert the skill_name and skill_description into vms_skill
 try:
 	cursor.execute(insertSkillSQL,[data['skill_name'],data['skill_description']])

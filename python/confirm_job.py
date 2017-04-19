@@ -5,6 +5,11 @@ import re
 import MySQLdb
 import cgitb; cgitb.enable()
 
+# Not currently in use
+# Confirms a job has been seen by a volunteer
+# Inputs - EventId, jobId
+# Outputs {job_status: completed}
+
 form = cgi.FieldStorage()
 data = {'eventId':form.getvalue("eventId"),'jobId':form.getvalue("jobId")}
 #data = {'eventId':'1','jobId':'10'}
@@ -53,6 +58,7 @@ except Exception as e:
 
 
 # Get the current status of this job
+# Moves SQL outside of execute
 try:
 	cursor.execute("SELECT status FROM VMS_jobs WHERE job_id = %s AND event_id = %s",[data['jobId'],data['eventId']])
 	status = cursor.fetchall()[0][0]
@@ -66,6 +72,7 @@ except Exception as e:
 out_data = {}
 
 # Set status
+# Move SQL outside of execute
 if status == None:
 	try:
 		cursor.execute("UPDATE VMS_jobs SET status = %s WHERE job_id = %s AND event_id = %s",['confirmed',data['jobId'],data['eventId']])

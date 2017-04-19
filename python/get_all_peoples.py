@@ -4,6 +4,10 @@ from helper import connectDb, sendJson
 import MySQLdb
 import cgitb; cgitb.enable()
 
+# Admin file that returns all volunteers and their information
+# No inputs
+# Outputs {id{info}}
+
 # Connect to database
 try:
 	cursor, connection = connectDb()
@@ -28,9 +32,7 @@ for i in return_ids:
 	person_ids.append(int(i[0]))
 person_ids = list(set(person_ids))
 
-
 out_data = {}
-
 
 for person in person_ids:
 
@@ -59,7 +61,6 @@ for person in person_ids:
 	for i in job_ids:
 		assigned_jobs.append(int(i[0]))
 
-
 	# Get assigned hours from VMS_availabilty
 	try:
 		cursor.execute('SELECT * FROM VMS_volunteer_availability WHERE person_pk = %s AND job_id IS NOT NULL',[person])
@@ -68,7 +69,6 @@ for person in person_ids:
 		print("Status: 400 Invalid MySQL Request(check if person_id exist in VMS_persons)\n")
 		print e
 		exit(1)
-
 
 	info = {}
 	info.update({'first_name':return_data[0][1]})
@@ -91,12 +91,6 @@ for person in person_ids:
 
 	out_data.update({person:info})
 
-
 print("Content-type: application/json")
 print("Status: 200 OK\n")
 print sendJson(out_data)
-
-
-
-
-

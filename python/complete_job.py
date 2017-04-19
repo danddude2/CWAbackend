@@ -5,8 +5,10 @@ import re
 import MySQLdb
 import cgitb; cgitb.enable()
 
-# Volunteer file to mark a job as complete #
-# Not currently in use#
+# Not currently in use
+# Volunteer file to mark a job as complete
+# Inputs - EventId, jobId
+# Outputs - {job_status:confirmed}
 
 form = cgi.FieldStorage()
 data = {'eventId':form.getvalue("eventId"),'jobId':form.getvalue("jobId")}
@@ -64,6 +66,7 @@ except Exception as e:
 	exit(1)
 
 out_data = {}
+
 # Set status
 # Move SQL out of executes
 if status == 'confirmed':

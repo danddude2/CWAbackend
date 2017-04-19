@@ -5,25 +5,25 @@ import re
 import MySQLdb
 import cgitb; cgitb.enable()
 
-# Admin File to assign volunteers to jobs
+# Admin File similar to assign jobs but does not check if times are available
 # Takes in Event Id, JobId, Volunteer Id
 # Outputs- {Success:True}, 400
 
 form = cgi.FieldStorage()
-#data = {'eventId':form.getvalue("eventId"),'jobId':form.getvalue("jobId"),'volunteerId':form.getvalue("volunteerId")}
-data = {'eventId':'1','jobId':'4','volunteerId':'5'}
+data = {'eventId':form.getvalue("eventId"),'jobId':form.getvalue("jobId"),'volunteerId':form.getvalue("volunteerId")}
+#data = {'eventId':'1','jobId':'4','volunteerId':'5'}
 
 # Connect to database
 try:
 	cursor, connection = connectDb()
 except Exception as e:
-	print("Status: 400 Database Connection Error\n")
+	print("Status: 500 Database Connection Error\n")
 	print("Database Connection failed")
 	print e
 	exit(1)
 
 
-# Check if the input jasn value is valid
+# Check if the input json value is valid
 if not(data["eventId"] and data['jobId'] and data["volunteerId"]):
 	print("Status: 400 Empty feilds\n")
 	print("Empty feilds, vaild eventId, jobId and volunteerId must be sent")
@@ -90,7 +90,7 @@ if (str(return_data[0][2]) != 'None'):
 		print e
 		exit(1)
 
-# Check if volunteer available times match job times.
+# If Volunteer availability does not match job time assign anyway
 # Edit to work for times not in 30min increments
 for dt in datetime_to_time_node(str(return_data[0][0]),str(return_data[0][1])):
 	dt += ':00'

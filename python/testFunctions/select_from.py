@@ -9,14 +9,14 @@ thing = str(getpass.getpass("Input tables:"))
 '''
 if(switch == 1):
     table = 'person'
-'''    
-cnx = MySQLdb.connect(user='root', passwd ='2511' , db = 'cwatest')
+'''
+cnx = MySQLdb.connect(user='root', passwd =password , db = 'cwatest')
 cursor = cnx.cursor()
 
 try:
         cursor.execute("SELECT * FROM %s;"% thing)
         tables = cursor.fetchall()
-        
+
 except MySQLdb.Error as err:
         print(err)
 else:

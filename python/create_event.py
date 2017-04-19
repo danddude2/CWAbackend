@@ -19,6 +19,7 @@ except Exception as e:
 	print e
 	exit(1)
 
+# SQL statments
 add_event = ("INSERT INTO VMS_events (event_name,start_date,end_date) VALUES (%s,%s,%s)")
 add_event_values = (data['eventname'],data['startdate'],data['enddate'])
 check_event = ("SELECT event_id FROM VMS_events WHERE event_name=%s")
