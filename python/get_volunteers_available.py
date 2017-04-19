@@ -1,12 +1,11 @@
 #!/usr/bin/python2.7
 import cgi
-from helper import connectDb, sendJson, string_to_datetime
+from helper import connectDb, sendJson
 import MySQLdb
-import datetime
-from datetime import date
 import cgitb; cgitb.enable()
 
 def person_filter(people,time_start,time_end):
+	
 	# get list of people id with redundent data
 	people_redun = []
 	for i in people:
@@ -23,18 +22,17 @@ def person_filter(people,time_start,time_end):
 		diff = diff - 1
 	if time_end[14:15] == '3':
 		diff = diff + 1
-# get person id with correct number of nodes and retrun list of people id
-	out = []
+	# get person id with correct number of nodes and retrun list of people id
+	out = [] 
 	for i in return_data:
 		if int(people_redun.count(i)) == diff:
 			out.append(int(i))
 
 	return out
 
-
 form = cgi.FieldStorage()
-data = {'jobId':form.getvalue("jobId")}
-#data = {'jobId':7}
+#data = {'jobId':form.getvalue("jobId")}
+data = {'jobId':64}
 # Connect to database
 try:
 	cursor, connection = connectDb()
@@ -92,9 +90,6 @@ except Exception as e:
 try:
 	cursor.execute(getJobTimeEnd,[data['jobId']])
 	(time_end,) = cursor.fetchone()
-	dt_end = time_end
-	dt_end = dt_end - datetime.timedelta(minutes = 30)
-	time_end = dt_end.strftime("%Y-%m-%d %H:%M:%S")
 except Exception as e:
 	print("Status: 400 Invalid MySQL Request(Could not get times from job_id)\n")
 	print("Invalid MySQL Request(Get times from job_id)")
@@ -121,8 +116,10 @@ final_data = person_filter(people,time_start,time_end)
 out_data = {}
 
 try:
+
 	for person in final_data:
-		# Get name
+
+		# Get name	
 		cursor.execute(getPersonName,[person])
 		(first,last,) = cursor.fetchone()
 		firstlast = first + ' ' + last
@@ -163,3 +160,5 @@ except Exception as e:
 print"Content-type: application/json"
 print"Status: 200 Login OK\n"
 print sendJson(out_data)
+
+
