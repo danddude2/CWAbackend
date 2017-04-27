@@ -6,5 +6,56 @@ FILES INCLUDED (TO RUN type "python _fileName_" then type mysql db password)
 #And replace with your db password (set on insall)
 
 
+List of Python Files:
+
+Format:
+example.py: input -> output
+
+This is where the description
+
+
+
+1. upgrade_volunteer: { userID, (admin:T/F), (driver:T/F)} -> sucess
+
+This function will take in a user id, and 2 json objects of admin and driver 
+each with a boolean value after the colon. The python file will then set the
+admin status and the driver status of the given user in the data base to either
+true or false depending on the input. The file will then return success
+
+2. signup.py: {firstName, lastName, email, phone, password, phone_type, birth} -> success
+
+This function will take in all the information from the signup page and
+create a new person in the database (with admin_status: False) with the 
+corresponding values. The password is hashed and salted using hashlib 
+(see helper.py). Currently the phone number, provider, and birth date 
+are only used so that the admins can observe them using get_volunteer_info.py 
+
+3. set_availability.py: {eventID, userID, time (date:[timerange1,timerange2],date2:[timerange1....),desired_hours} -> success
+
+This function will take in the user who is submitting their times, which
+event they are submitting for, and a time object with all the information
+about date, begin and end times of their availabilty (see above) and create 
+entries in the availabilty table in the database corresponding to all of 
+the time ranges passed in. It is important to know that the way we are storing
+free time in our database is in 30 minute chunks, so if I am free 2:00 to 4:00
+then in the database will be 4 seperate entries: 2:00,2:30,3:00,3:30 where
+the 2:00 entry refers to the chunk 2-2:30 and the 2:30 chunk refers to 2:30-3.
+Also the desired hours are set here (the amount each volunteer wants to work).
+
+4. pyinfo.py: Helper file of functions
+
+I have no idea what this is for, please comment Justin/Dongyao
+
+5. login.py: {email,password} -> {firstname,lastname,email,phone_number,phone_provider, admin_status, driver_status, desired_hours, assigned_hours, assigned_job_ids, userID, enventsIDs}
+
+This function takes in the email and the attemped password, then finds the
+salt of the given user (based on email) and hashes the attempted password 
+and compares with the hashed password that was set during signup.py. If 
+they match then success is given to the frontend, if not a 400 is passed 
+back. If the login was successful though all the information the frontend 
+needs about the user is given so that they have it in scope. Things to note:
+The assigned _hours corresponds with the total hours added up of all that 
+user's jobs and the eventIDs are all the events this person has submitted 
+free time for.
 
 
