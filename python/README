@@ -42,7 +42,9 @@ then in the database will be 4 seperate entries: 2:00,2:30,3:00,3:30 where
 the 2:00 entry refers to the chunk 2-2:30 and the 2:30 chunk refers to 2:30-3.
 Also the desired hours are set here (the amount each volunteer wants to work).
 
-4. pyinfo.py: Helper file of functions
+4. pyinfo.py: 
+
+Helper file of functions
 
 I have no idea what this is for, please comment Justin/Dongyao
 
@@ -58,4 +60,34 @@ The assigned _hours corresponds with the total hours added up of all that
 user's jobs and the eventIDs are all the events this person has submitted 
 free time for.
 
+6. helper.py / helper2.py: 
 
+These files are filled with helper functions for some of the other files.
+See inside the files for more information.
+
+7. get_volunteers_available.py: {jobID} -> {person1:[name,desired_hours,assigned_hours],person2....]}
+
+This function takes in a jobID and returns all of the volunteers in the 
+database with corresponding free time (along with relivant information like 
+how many hours they are already working). It is important to know for this
+function that two inportant helper functions are called: the first, time_rounder,
+converts the job into times that match the fact volunteers are available only
+in thirty minute increments (i.e. a job from 2:45-3:00 will look for people 
+that are free from 2:30 to 3:00), and the second, person_filter, deals with 
+the corner case where the Between command gives volunteers only if they are
+free thiryty minutes after the job time in addition to the normal.
+
+8. get_volunteer_jobs: { userID, eventID} -> {job1:[name,eventID,userID,date,startTime,endTime,location,description,status],job2:...}
+
+This function will take in a volunteer and a specific event and return all the
+corresponding assigned jobs as json objects with all of the information of 
+the given job (see output above) . Note that the index of the dictionary
+is the jobID.
+
+9. get_volunteer_job_ids.py: {userID,eventID} -> {jobs:[ids...], availabilityCheck:T/F}
+
+The function will take in a volunteer and a specific event just like the 
+get_volunteers_available.py, but this time only a list of the jobIDs is given 
+back in addition to a check to see if the user has inputed any times they 
+would be available for the event that was passed in.
+ 
