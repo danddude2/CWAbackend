@@ -1,93 +1,95 @@
-FILES INCLUDED (TO RUN type "python _fileName_" then type mysql db password)
------------------------------------------------------------------------------
-*show_tablesDB.py -will show all tables in the database
-
-#In show_tables comment out "password = getpass.getpass()" with '#'
-#And replace with your db password (set on insall)
-
-
-List of Python Files:
-
+Python scripts for cwa/jazz.com/vms2
+--------------------------------------------------------------------------------
 Format:
-example.py: input -> output
+example.py
+input -> output
+        Description
+------------------------------Helper Files--------------------------------------
+1. helper.py
+        Utility file which acts as library of common functions.
 
-This is where the description
+2. datetime_parser.py
+        Utility file that formats inputs into valid date time formats. Functions have been copied to helper.py so this now acts as a reference file.
 
+3. unitTest.py
+        Tester file for helper.py file. To run, on a local machine not the server run python unitTest.py in the command line.
 
+-----------------------------Volunteer actions----------------------------------
+1. signup.py:
+{firstName, lastName, email, phone, password, phone_type, birth} -> success
+        This function will take in all the information from the signup page and create a new person in the database (with admin_status: False) with the corresponding values. The password is hashed and salted using hashlib (see helper.py). Currently the phone number, provider, and birth date are only used so that the admins can observe them using get_volunteer_info.py
 
-1. upgrade_volunteer: { userID, (admin:T/F), (driver:T/F)} -> sucess
-
-This function will take in a user id, and 2 json objects of admin and driver 
-each with a boolean value after the colon. The python file will then set the
-admin status and the driver status of the given user in the data base to either
-true or false depending on the input. The file will then return success
-
-2. signup.py: {firstName, lastName, email, phone, password, phone_type, birth} -> success
-
-This function will take in all the information from the signup page and
-create a new person in the database (with admin_status: False) with the 
-corresponding values. The password is hashed and salted using hashlib 
-(see helper.py). Currently the phone number, provider, and birth date 
-are only used so that the admins can observe them using get_volunteer_info.py 
+2. login.py:
+{email,password} -> {firstname,lastname,email,phone_number,phone_provider, admin_status, driver_status, desired_hours, assigned_hours, assigned_job_ids, userID, enventsIDs}
+        This function takes in the email and the attempted password, then finds the salt of the given user (based on email) and hashes the attempted password and compares with the hashed password that was set during signup.py. If they match then success is given to the frontend, if not a 400 is passed back. If the login was successful though all the information the frontend needs about the user is given so that they have it in scope. Things to note: The assigned _hours corresponds with the total hours added up of all that user's jobs and the eventIDs are all the events this person has submitted free time for.
 
 3. set_availability.py: {eventID, userID, time (date:[timerange1,timerange2],date2:[timerange1....),desired_hours} -> success
+        This function will take in the user who is submitting their times, which event they are submitting for, and a time object with all the information about date, begin and end times of their availability (see above) and create entries in the availability table in the database corresponding to all of the time ranges passed in. It is important to know that the way we are storing free time in our database is in 30 minute chunks, so if I am free 2:00 to 4:00 then in the database will be 4 separate entries: 2:00,2:30,3:00,3:30 where the 2:00 entry refers to the chunk 2-2:30 and the 2:30 chunk refers to 2:30-3. Also the desired hours are set here (the amount each volunteer wants to work).
 
-This function will take in the user who is submitting their times, which
-event they are submitting for, and a time object with all the information
-about date, begin and end times of their availabilty (see above) and create 
-entries in the availabilty table in the database corresponding to all of 
-the time ranges passed in. It is important to know that the way we are storing
-free time in our database is in 30 minute chunks, so if I am free 2:00 to 4:00
-then in the database will be 4 seperate entries: 2:00,2:30,3:00,3:30 where
-the 2:00 entry refers to the chunk 2-2:30 and the 2:30 chunk refers to 2:30-3.
-Also the desired hours are set here (the amount each volunteer wants to work).
+4. delete_availability
+{eventId, volunteerId, date, time} -> {Success:True}/400
+        File that deletes volunteer times from volunteer availability. Times are given as time ranges and all availability nodes in between are deleted. NOTE: If a volunteer is assigned during one of the nodes the node will not be deleted but a success will still return for all other nodes which were deleted.
 
-4. pyinfo.py: 
+5. confirm_job
+{eventId, jobId} -> {job_status}
+        Allows volunteers to change the status of a job to confirmed. Admins can see that a volunteer has seen their assigned jobs and that they will show up for them. Updates VMS_jobs.
 
-Helper file of functions
+6. complete_job
+{eventId, jobId} -> {job_status}
+        A file which allows volunteers to change the status of a job to completed. Currently not in use but would allow admins to see completed jobs. Updates VMS_jobs.
 
-I have no idea what this is for, please comment Justin/Dongyao
+-----------------------------Admin actions--------------------------------------
+1. create_event
+{eventname, startdate, enddate} -> {Success:True}/400
+        Creates events in a certain date range for the site. IMPORTANT: All events must be valid or login and signup will fail. Events are stored in VMS_events
 
-5. login.py: {email,password} -> {firstname,lastname,email,phone_number,phone_provider, admin_status, driver_status, desired_hours, assigned_hours, assigned_job_ids, userID, enventsIDs}
+2. create_job
+  {event_id, job_name, job_date, job_time_start, job_time_end, location, job_description} -> {Success:True}/400
+          Creates a job for a specific event. Jobs are stored in VMS_jobs.
 
-This function takes in the email and the attemped password, then finds the
-salt of the given user (based on email) and hashes the attempted password 
-and compares with the hashed password that was set during signup.py. If 
-they match then success is given to the frontend, if not a 400 is passed 
-back. If the login was successful though all the information the frontend 
-needs about the user is given so that they have it in scope. Things to note:
-The assigned _hours corresponds with the total hours added up of all that 
-user's jobs and the eventIDs are all the events this person has submitted 
-free time for.
+3. create_skill
 
-6. helper.py / helper2.py: 
+4. delete_job
 
-These files are filled with helper functions for some of the other files.
-See inside the files for more information.
+5. assign_job
 
-7. get_volunteers_available.py: {jobID} -> {person1:[name,desired_hours,assigned_hours],person2....]}
+6. unassign_job
 
-This function takes in a jobID and returns all of the volunteers in the 
-database with corresponding free time (along with relivant information like 
-how many hours they are already working). It is important to know for this
-function that two inportant helper functions are called: the first, time_rounder,
-converts the job into times that match the fact volunteers are available only
-in thirty minute increments (i.e. a job from 2:45-3:00 will look for people 
-that are free from 2:30 to 3:00), and the second, person_filter, deals with 
-the corner case where the Between command gives volunteers only if they are
-free thiryty minutes after the job time in addition to the normal.
+7. force_assign
 
-8. get_volunteer_jobs: { userID, eventID} -> {job1:[name,eventID,userID,date,startTime,endTime,location,description,status],job2:...}
+8. upgrade_volunteer:
+{ userID, (admin:T/F), (driver:T/F)} -> success
+    This function will take in a user id, and 2 json objects of admin and driver each with a boolean value after the colon. The python file will then set the admin status and the driver status of the given user in the data base to either true or false depending on the input. The file will then return success
 
-This function will take in a volunteer and a specific event and return all the
-corresponding assigned jobs as json objects with all of the information of 
-the given job (see output above) . Note that the index of the dictionary
-is the jobID.
+---------------------------Info Return Files------------------------------------
+get_volunteers_available.py:
+{jobID} -> {person1:[name,desired_hours,assigned_hours],person2....]}
+    This function takes in a jobID and returns all of the volunteers in the database with corresponding free time (along with relevant information like how many hours they are already working). It is important to know for this function that two important helper functions are called: the first, time_rounder, converts the job into times that match the fact volunteers are available only in thirty minute increments (i.e. a job from 2:45-3:00 will look for people that are free from 2:30 to 3:00), and the second, person_filter, deals with the corner case where the Between command gives volunteers only if they are free thirty minutes after the job time in addition to the normal.
 
-9. get_volunteer_job_ids.py: {userID,eventID} -> {jobs:[ids...], availabilityCheck:T/F}
+2. get_all_availaility
 
-The function will take in a volunteer and a specific event just like the 
-get_volunteers_available.py, but this time only a list of the jobIDs is given 
-back in addition to a check to see if the user has inputed any times they 
-would be available for the event that was passed in.
- 
+3. get_all_peoples
+
+4. get_event_jobs
+
+5. get_event_peoples
+
+6. get_events
+
+7. get_job_info
+
+8. get_one_volunteer_info
+
+9. get_skill
+
+10. get_volunteer_availability
+
+11. get_volunteer_events
+
+12. get_volunteer_job_ids.py:
+{userID,eventID} -> {jobs:[ids...], availabilityCheck:T/F}
+    The function will take in a volunteer and a specific event just like the get_volunteers_available.py, but this time only a list of the jobIDs is given back in addition to a check to see if the user has inputted any times they would be available for the event that was passed in.
+
+13. get_volunteer_jobs:
+{ userID, eventID} -> {job1:[name,eventID,userID,date,startTime,endTime,location,description,status],job2:..
+    This function will take in a volunteer and a specific event and return all the corresponding assigned jobs as json objects with all of the information of the given job (see output above) . Note that the index of the dictionary is the jobID.
