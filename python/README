@@ -56,11 +56,17 @@ input -> output
 
 2. create_job
 {event_id, job_name, job_date, job_time_start, job_time_end, location, job_description} -> {Success:True}/400
-          Creates a job for a specific event. Jobs are stored in VMS_jobs.
+        Creates a job for a specific event. Jobs are stored in VMS_jobs.
 
-3. create_skill
+3. create_skill(Not deployed on website)
+{skill_name, skill_description} -> {Success:True}/400
+	creates a skill.
+	This skill could be used as an attribute for a job in the future.
 
-4. delete_job
+4. delete_job 
+{job_id}-> {Success:True}/400
+	Delete a job.
+	If someone is assigned to this job, then remove the corrsbonding jobId in their VMS_volunteer_availability table.
 
 5. assign_job
 {eventId, jobId, VolunteerId} -> {Success:True}/400
