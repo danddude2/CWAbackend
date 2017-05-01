@@ -105,13 +105,20 @@ input -> output
 	This function takes in an event and returns all the jobs in that event with all their information.
 
 5. get_event_peoples
+{eventId} -> {person1:{first_name, last_name, email, phone_number, phone_provider, admin_status, date_of_birth, driver_status, desired_hours, assigned_hours, assigned_job_ids},person2...}
+	This function takes in an event and returns all the persons in that event with all their information.
 
 6. get_events
+{} -> {event1:{event_name, eventDays},event2...}
+	This function takes in nothing, but returns all the events in the database with all their info. 
 
 7. get_job_info
+{jobId} -> {event_id, person_pk, job_time_start, job_time_end, location, job_description, job_name, job_status}
+	This function takes in an job and returns all this job information.
 
 8. get_one_volunteer_info
-	
+{volunteerId} -> {first_name, last_name, email, phone_number, phone_provider, admin_status, date_of_birth, driver_status, desired_hours, assigned_hours, assigned_job_ids}
+	This function takes in an volunteer and returns all this person information.
 
 9. get_skill
 {skillID} -> {ID, name , description}
