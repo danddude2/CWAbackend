@@ -63,8 +63,16 @@ input -> output
 4. delete_job
 
 5. assign_job
+{eventId, jobId, VolunteerId} -> {Success:True}/400
+	Assign volunteer to a job associated with an event.
+	In VMS_jobs table, person_pk will be filled with this volunteerId.
+	And in VMS_volunteer_availability, the corresbonding time slot will also be marked by this jobId.
 
 6. unassign_job
+{jobId, volunteerId} -> {Success:True}/400
+	Unassign volunteer to a job
+	In VMS_jobs table, person_pk will be set to null.
+	And in VMS_volunteer_availability, the corresbonding time slot will also be set as null.
 
 7. force_assign
 
