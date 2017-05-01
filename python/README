@@ -1,3 +1,23 @@
+README for the backend of cwa/jazz.com/vms2
+
+The site off of python scripts that return to the react front end. All python files must return http headers and json encapsulated data.
+
+Common Errors:
+Files not running in non root folder:
+        Must add an htcaccess file to the directory to be able to run outside of the server.
+500:
+        Wrong return headers the python files must print headers before sending data.
+        File permission rights are incorrect. They must be at least 755 to run and default is 644.
+400:
+        See error messages. Also will happen on some pages no matter what after reload.
+
+Login/signup failing:
+        Invalid event causing get events to not load. Check the database and delete any events with incorrect times.
+
+Incorrect availability listing:
+        Happens when availability is updated but the front end uses past call info. Can be fixed by reloading the availability page from events page.
+--------------------------------------------------------------------------------
+
 Python scripts for cwa/jazz.com/vms2
 --------------------------------------------------------------------------------
 Format:
@@ -17,28 +37,28 @@ input -> output
 -----------------------------Volunteer actions----------------------------------
 1. signup.py:
 {firstName, lastName, email, phone, password, phone_type, birth} -> {Success:True}/400
-        This function will take in all the information from the signup page and create a new person in the database (with admin_status: False) with the corresponding values. 
+        This function will take in all the information from the signup page and create a new person in the database (with admin_status: False) with the corresponding values.
         The password is hashed and salted using hashlib (see helper.py). Currently the phone number, provider, and birth date are only used so that the admins can observe
         them using get_volunteer_info.py.
 
 2. login.py:
 {email,password} -> {firstname,lastname,email,phone_number,phone_provider, admin_status, driver_status, desired_hours, assigned_hours, assigned_job_ids, userID, enventsIDs}
-        This function takes in the email and the attempted password, then finds the salt of the given user (based on email) and hashes the attempted password and compares 
-        with the hashed password that was set during signup.py. If they match then success is given to the frontend, if not a 400 is passed back. If the login was successful 
-        though all the information the frontend needs about the user is given so that they have it in scope. Things to note: The assigned _hours corresponds with the total 
+        This function takes in the email and the attempted password, then finds the salt of the given user (based on email) and hashes the attempted password and compares
+        with the hashed password that was set during signup.py. If they match then success is given to the frontend, if not a 400 is passed back. If the login was successful
+        though all the information the frontend needs about the user is given so that they have it in scope. Things to note: The assigned _hours corresponds with the total
         hours added up of all that user's jobs and the eventIDs are all the events this person has submitted free time for.
 
-3. set_availability.py: 
+3. set_availability.py:
 {eventID, userID, available_times(date:[timerange1,timerange2],date2:[timerange1....),desired_hours} -> {Success:True}/400
-        This function will take in the user who is submitting their times, which event they are submitting for, and a time object with all the information about date, begin 
-        and end times of their availability (see above) and create entries in the availability table in the database corresponding to all of the time ranges passed in. It is 
-        important to know that the way we are storing free time in our database is in 30 minute chunks, so if I am free 2:00 to 4:00 then in the database will be 4 separate 
-        entries: 2:00,2:30,3:00,3:30 where the 2:00 entry refers to the chunk 2-2:30 and the 2:30 chunk refers to 2:30-3. Also the desired hours are set here 
+        This function will take in the user who is submitting their times, which event they are submitting for, and a time object with all the information about date, begin
+        and end times of their availability (see above) and create entries in the availability table in the database corresponding to all of the time ranges passed in. It is
+        important to know that the way we are storing free time in our database is in 30 minute chunks, so if I am free 2:00 to 4:00 then in the database will be 4 separate
+        entries: 2:00,2:30,3:00,3:30 where the 2:00 entry refers to the chunk 2-2:30 and the 2:30 chunk refers to 2:30-3. Also the desired hours are set here
         (the amount each volunteer wants to work).
 
 4. delete_availability
 {eventId, volunteerId, date, time} -> {Success:True}/400
-        File that deletes volunteer times from volunteer availability. Times are given as time ranges and all availability nodes in between are deleted. NOTE: If a volunteer 
+        File that deletes volunteer times from volunteer availability. Times are given as time ranges and all availability nodes in between are deleted. NOTE: If a volunteer
         is assigned during one of the nodes the node will not be deleted but a success will still return for all other nodes which were deleted.
 
 5. confirm_job
@@ -52,7 +72,7 @@ input -> output
 -----------------------------Admin actions--------------------------------------
 1. create_event
 {eventname, startdate, enddate} -> {Success:True}/400
-        Creates events in a certain date range for the site. IMPORTANT: All events must be valid or login and signup will fail. Events are stored in VMS_events
+        Creates events in a certain date range for the site. IMPORTANT: All events must be valid or login and signup will fail. Events are stored in VMS_events.
 
 2. create_job
 {event_id, job_name, job_date, job_time_start, job_time_end, location, job_description} -> {Success:True}/400
@@ -60,29 +80,22 @@ input -> output
 
 3. create_skill(Not deployed on website)
 {skill_name, skill_description} -> {Success:True}/400
-	creates a skill.
-	This skill could be used as an attribute for a job in the future.
+        Creates preset skills which will eventually be used  with create_job. Currently not in use but the table does exist in the database. VMS_skills has all of the skills stored.
 
-4. delete_job 
+4. delete_job
 {job_id}-> {Success:True}/400
-	Delete a job.
-	If someone is assigned to this job, then remove the corrsbonding jobId in their VMS_volunteer_availability table.
+        Removes a job from the database. If a person is assigned to the job they will be unassigned. Deleted from VMS_jobs.
 
 5. assign_job
-{eventId, jobId, VolunteerId} -> {Success:True}/400
-	Assign volunteer to a job associated with an event.
-	In VMS_jobs table, person_pk will be filled with this volunteerId.
-	And in VMS_volunteer_availability, the corresbonding time slot will also be marked by this jobId.
+{eventId, jobId, volunteerId} -> {Success:True}
+        Adds a volunteer Id to a job in VMS_jobs and a job Id to VMS_volunteer_availability. This effectively assigns a specific volunteer to a job making it viewable from the volunteer side. Also updates admin side and show the job as assigned.
+6. force_assign
+{eventId, jobId, volunteerId} -> {Success:True}
+        File works the same as assign_job but will not check if the volunteer has available times during the job_times. Assign_job may have this functionality already and this may be removed as long as pointers from the front end are rearragned.
 
-6. unassign_job
-{jobId, volunteerId} -> {Success:True}/400
-	Unassign volunteer to a job
-	In VMS_jobs table, person_pk will be set to null.
-	And in VMS_volunteer_availability, the corresbonding time slot will also be set as null.
-
-7. force_assign
-{eventId, jobId, VolunteerId} -> {Success:True}/400
-	Similar to assign jobs but does not check if times are available
+7. unassign_job
+{eventId, jobId, volunteerId}
+        Removes job id from VMS_volunteer_availabiity and volunteer id from VMS_jobs. Once a job is unassigned volunteers will no longer be able to see it and on the admin side it will be seen as unassigned.
 
 8. upgrade_volunteer:
 { userID, (admin:T/F), (driver:T/F)} -> success
@@ -92,10 +105,10 @@ input -> output
 ---------------------------Info Return Files------------------------------------
 1. get_volunteers_available:
 {jobID} -> {person1:[name,desired_hours,assigned_hours],person2....]}
-    This function takes in a jobID and returns all of the volunteers in the database with corresponding free time (along with relevant information like how many 
-    hours they are already working). It is important to know for this function that two important helper functions are called: the first, time_rounder, 
+    This function takes in a jobID and returns all of the volunteers in the database with corresponding free time (along with relevant information like how many
+    hours they are already working). It is important to know for this function that two important helper functions are called: the first, time_rounder,
     the job into times that match the fact volunteers are available only in thirty minute increments (i.e. a job from 2:45-3:00 will look for people
-    that are free from 2:30 to 3:00), and the second, person_filter, deals with the corner case where the Between command gives volunteers only if they 
+    that are free from 2:30 to 3:00), and the second, person_filter, deals with the corner case where the Between command gives volunteers only if they
     are free thirty minutes after the job time in addition to the normal.
 
 2. get_all_availability
@@ -106,7 +119,7 @@ input -> output
 
 3. get_all_peoples
 {} -> {person1:{firstname,lastname,email,phone_number,admin_status,birthdate,desiredhours,assignedhours,jobs}
-	This function takes in nothing, but returns all the users in the database along with all their info except their available times. 
+	This function takes in nothing, but returns all the users in the database along with all their info except their available times.
 
 4. get_event_jobs
 {eventID} -> {job1:{name,eventID,userID,date,startTime,endTime,location,description,status},job2...}
@@ -118,7 +131,7 @@ input -> output
 
 6. get_events
 {} -> {event1:{event_name, eventDays},event2...}
-	This function takes in nothing, but returns all the events in the database with all their info. 
+	This function takes in nothing, but returns all the events in the database with all their info.
 
 7. get_job_info
 {jobId} -> {event_id, person_pk, job_time_start, job_time_end, location, job_description, job_name, job_status}
@@ -131,23 +144,23 @@ input -> output
 9. get_skill
 {skillID} -> {ID, name , description}
 	This function returns all of the information about a skill given its id. We have not implemented the use of skills for our system
-	yeet so this function is never called from the FrontEnd. 
+	yeet so this function is never called from the FrontEnd.
 
 10. get_volunteer_availability
-{userID, eventID} -> { availabletimes} 
-	This function takes in a userID and an event and returns all the availble times that person has given for that 	specfic event. 
+{userID, eventID} -> { availabletimes}
+	This function takes in a userID and an event and returns all the availble times that person has given for that 	specfic event.
 	The format of returned time ranges looks much like the format for set_availability (date:[timerange1,timerange2],date2:[timerange1....).
-	
+
 11. get_volunteer_events
 {userID} -> {events}
 	This function takes a userID and returns all events that the given user has given availability for.
 
 12. get_volunteer_job_ids.py:
 {userID,eventID} -> {jobs:[ids...], availabilityCheck:T/F}
-    The function will take in a volunteer and a specific event just like the get_volunteers_available.py, but this time only a list of the jobIDs is given 
+    The function will take in a volunteer and a specific event just like the get_volunteers_available.py, but this time only a list of the jobIDs is given
     back in addition to a check to see if the user has inputted any times they would be available for the event that was passed in.
 
 13. get_volunteer_jobs:
 { userID, eventID} -> {job1:[name,eventID,userID,date,startTime,endTime,location,description,status],job2:..
-    This function will take in a volunteer and a specific event and return all the corresponding assigned jobs as json objects with all of the information 
+    This function will take in a volunteer and a specific event and return all the corresponding assigned jobs as json objects with all of the information
     of the given job (see output above) . Note that the index of the dictionary is the jobID.
