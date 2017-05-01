@@ -81,6 +81,8 @@ input -> output
 	And in VMS_volunteer_availability, the corresbonding time slot will also be set as null.
 
 7. force_assign
+{eventId, jobId, VolunteerId} -> {Success:True}/400
+	Similar to assign jobs but does not check if times are available
 
 8. upgrade_volunteer:
 { userID, (admin:T/F), (driver:T/F)} -> success
